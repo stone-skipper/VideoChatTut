@@ -22,6 +22,8 @@ io.on("connection", (socket) => {
       signal: data.signalData,
       from: data.from,
       name: data.name,
+      width: data.width,
+      height: data.height,
     });
   });
 

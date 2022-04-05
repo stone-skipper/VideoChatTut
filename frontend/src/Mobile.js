@@ -4,6 +4,7 @@ import TextField from "@material-ui/core/TextField";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import PhoneIcon from "@material-ui/icons/Phone";
 import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Peer from "simple-peer";
 import io from "socket.io-client";
@@ -11,7 +12,9 @@ import "./App.css";
 import { Link } from "react-router-dom";
 
 const socket = io.connect("http://localhost:5000");
+
 function Mobile() {
+  const [mobileControl, setMobileControl] = useState(null);
   const [me, setMe] = useState("");
   const [stream, setStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);
@@ -20,14 +23,23 @@ function Mobile() {
   const [callAccepted, setCallAccepted] = useState(false);
   const [idToCall, setIdToCall] = useState("");
   const [callEnded, setCallEnded] = useState(false);
+  const [dWidth, setDWidth] = useState(0);
+  const [dHeight, setDHeight] = useState(0);
   const [name, setName] = useState("");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const myVideo = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
 
   useEffect(() => {
+    setDWidth(window.innerWidth);
+    setDHeight(window.innerHeight);
+    console.log(searchParams.get("socketid"));
+
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream) => {
         setStream(stream);
         myVideo.current.srcObject = stream;
@@ -56,7 +68,9 @@ function Mobile() {
         userToCall: id,
         signalData: data,
         from: me,
-        name: name,
+        name: mobileControl,
+        width: dWidth,
+        height: dHeight,
       });
     });
     peer.on("stream", (stream) => {
@@ -81,7 +95,7 @@ function Mobile() {
       socket.emit("answerCall", { signal: data, to: caller });
     });
     peer.on("stream", (stream) => {
-      userVideo.current.srcObject = stream;
+      // userVideo.current.srcObject = stream;
     });
 
     peer.signal(callerSignal);
@@ -92,92 +106,128 @@ function Mobile() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
-
+  const Btn = ({ number }) => {
+    return (
+      <div
+        style={{
+          width: 80,
+          height: 40,
+          background: "white",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 5,
+          cursor: "pointer",
+          border:
+            number === mobileControl ? "1px solid blue" : "1px solid lightgrey",
+        }}
+        onClick={() => {
+          setMobileControl(number);
+        }}
+      >
+        {number}
+      </div>
+    );
+  };
   return (
-    <>
-      <Link to="/home">
-        <button variant="outlined">back home</button>
-      </Link>
-      <h1 style={{ textAlign: "center", color: "#fff" }}>For mobile</h1>
-      <div className="container">
-        <div className="video-container">
-          <div className="video">
-            {stream && (
-              <video
-                playsInline
-                muted
-                ref={myVideo}
-                autoPlay
-                style={{ width: "300px" }}
-              />
-            )}
-          </div>
-          <div className="video">
-            {callAccepted && !callEnded ? (
-              <video
-                playsInline
-                ref={userVideo}
-                autoPlay
-                style={{ width: "300px" }}
-              />
-            ) : null}
-          </div>
-        </div>
-        <div className="myId">
-          <TextField
-            id="filled-basic"
-            label="Name"
-            variant="filled"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ marginBottom: "20px" }}
-          />
-          <CopyToClipboard text={me} style={{ marginBottom: "2rem" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AssignmentIcon fontSize="large" />}
-            >
-              Copy ID
-            </Button>
-          </CopyToClipboard>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          width: "100vw",
+          height: "fit-content",
+          position: "absolute",
+          top: 0,
+        }}
+      >
+        <h1 style={{ textAlign: "center", color: "#fff" }}>Mobile Control</h1>
 
-          <TextField
+        <Link to="/">
+          <button variant="outlined">back home</button>
+        </Link>
+        <div
+          style={{
+            display: "flex",
+            // display: mobileControl === null ? "flex" : "none",
+            gap: 10,
+            margin: 30,
+          }}
+        >
+          <Btn number={1} />
+          <Btn number={2} /> <Btn number={3} /> <Btn number={4} />
+          <Btn number={5} /> <Btn number={6} />
+        </div>
+        <div
+          style={{
+            display: callAccepted ? "none" : "block",
+            background: "white",
+            padding: 30,
+            borderRadius: 10,
+            width: "fit-content",
+            margin: "0 auto",
+          }}
+        >
+          {/* <TextField
             id="filled-basic"
             label="ID to call"
             variant="filled"
             value={idToCall}
             onChange={(e) => setIdToCall(e.target.value)}
-          />
-          <div className="call-button">
-            {callAccepted && !callEnded ? (
-              <Button variant="contained" color="secondary" onClick={leaveCall}>
-                End Call
-              </Button>
-            ) : (
-              <IconButton
-                color="primary"
-                aria-label="call"
-                onClick={() => callUser(idToCall)}
-              >
-                <PhoneIcon fontSize="large" />
-              </IconButton>
-            )}
-            {idToCall}
-          </div>
-        </div>
-        <div>
-          {receivingCall && !callAccepted ? (
-            <div className="caller">
-              <h1>{name} is calling...</h1>
-              <Button variant="contained" color="primary" onClick={answerCall}>
-                Answer
-              </Button>
-            </div>
-          ) : null}
+          /> */}
+          {callAccepted && !callEnded ? (
+            <Button variant="contained" color="secondary" onClick={leaveCall}>
+              End Call
+            </Button>
+          ) : (
+            <IconButton
+              color="primary"
+              aria-label="call"
+              // onClick={() => callUser(idToCall)}
+              onClick={() => {
+                if (mobileControl !== null) {
+                  callUser(searchParams.get("socketid"));
+                } else alert("select device number first");
+              }}
+            >
+              <PhoneIcon fontSize="large" />
+            </IconButton>
+          )}
         </div>
       </div>
-    </>
+
+      <div
+        style={{ height: "100%", position: "absolute", left: 0, zIndex: -2 }}
+      >
+        {stream && (
+          <video
+            playsInline
+            muted
+            ref={myVideo}
+            autoPlay
+            style={{ height: "100%", objectFit: "contain" }}
+          />
+        )}
+      </div>
+      <div>
+        {callAccepted && !callEnded ? (
+          <video
+            playsInline
+            ref={userVideo}
+            autoPlay
+            style={{ height: "100%" }}
+          />
+        ) : null}
+      </div>
+    </div>
   );
 }
 
