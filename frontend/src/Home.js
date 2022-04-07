@@ -24,29 +24,20 @@ function Home() {
   const [idToCall, setIdToCall] = useState("");
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("desktop");
-  const [device, setDevice] = useState([]);
-
+  const [userArray, setUserArray] = useState([]);
+  var uArray = [];
   const myVideo = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
-  const baseURL = "http://localhost:3000/mobile?socketid=";
-
-  const deviceArray = [
-    { name: 1, width: 0, height: 0 },
-    { name: 2, width: 0, height: 0 },
-    { name: 3, width: 0, height: 0 },
-    { name: 4, width: 0, height: 0 },
-    { name: 5, width: 0, height: 0 },
-    { name: 6, width: 0, height: 0 },
-  ];
+  const baseURL = "http://localhost:3000/hub?socketid=";
 
   useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
-      .then((stream) => {
-        setStream(stream);
-        myVideo.current.srcObject = stream;
-      });
+    // navigator.mediaDevices
+    //   .getUserMedia({ video: true, audio: false })
+    //   .then((stream) => {
+    //     setStream(stream);
+    //     // myVideo.current.srcObject = stream;
+    //   });
 
     socket.on("me", (id) => {
       setMe(id);
@@ -57,11 +48,13 @@ function Home() {
       setCaller(data.from);
       setName(data.name);
       setCallerSignal(data.signal);
-      deviceArray.push({
-        name: data.name,
-        width: data.width,
-        height: data.height,
-      });
+      uArray.push({ name: data.name, autoFollow: data.autoFollow });
+      console.log(uArray);
+      setUserArray(uArray);
+    });
+
+    socket.on("switchMode", (data) => {
+      console.log("switching mode", data);
     });
   }, []);
 
@@ -80,7 +73,7 @@ function Home() {
       });
     });
     peer.on("stream", (stream) => {
-      // userVideo.current.srcObject = stream;
+      userVideo.current.srcObject = stream;
     });
     socket.on("callAccepted", (signal) => {
       setCallAccepted(true);
@@ -98,12 +91,20 @@ function Home() {
       stream: stream,
     });
     peer.on("signal", (data) => {
-      socket.emit("answerCall", { signal: data, to: caller });
+      socket.emit("answerCall", {
+        signal: data,
+        to: caller,
+      });
     });
     peer.on("stream", (stream) => {
-      // userVideo.current.srcObject = stream;
+      userVideo.current.srcObject = stream;
     });
-
+    peer.on("signal", (data) => {
+      socket.emit("switchMode", {
+        name: data.name,
+        autoFollow: data.autoFollow,
+      });
+    });
     peer.signal(callerSignal);
     connectionRef.current = peer;
   };
@@ -113,40 +114,8 @@ function Home() {
     connectionRef.current.destroy();
   };
 
-  const checkConnection = () => {};
-
   return (
     <>
-      <div
-        style={{
-          width: "100vw",
-          height: "50vh",
-          position: "fixed",
-          bottom: 0,
-          background: "black",
-          zIndex: 2,
-          // display: "none",
-        }}
-      >
-        <div>
-          {deviceArray.map((item, index) => {
-            return (
-              <div style={{ display: "flex" }}>
-                <div
-                  style={{
-                    border: "2px solid white",
-                    borderRadius: 10,
-                    width: item.width / 5,
-                    height: item.height / 5,
-                  }}
-                >
-                  {item.name.toString()}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
       <div
         style={{
           width: "100vw",
@@ -161,9 +130,7 @@ function Home() {
         <h1 style={{ textAlign: "center", color: "#fff" }}>
           Hybrid Meeting Experience Demo
         </h1>
-        {/* <Link to="/mobile">
-          <button variant="outlined">Mobile</button>
-        </Link> */}
+
         <div
           style={{
             display: "flex",
@@ -175,29 +142,52 @@ function Home() {
             window.open(baseURL + me);
           }}
         >
-          <QRCodeSVG value={baseURL + me} size={128} />,
+          <QRCodeSVG value={baseURL + me} size={50} />,
         </div>
-        <div className="video-container">
-          <div className="video">
-            {stream && (
+        <div>
+          <div>
+            {/* {stream && (
               <video
                 playsInline
                 muted
                 ref={myVideo}
                 autoPlay
-                style={{ width: "300px" }}
+                style={{ width: "300px", transform: "scaleX(-100%)" }}
               />
-            )}
+            )} */}
           </div>
-          <div className="video">
-            {/* {callAccepted && !callEnded ? (
-              <video
-                playsInline
-                ref={userVideo}
-                autoPlay
-                style={{ width: "300px" }}
-              />
-            ) : null} */}
+          <div
+            style={{
+              height: "fit-content",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                height: 200,
+                width: 200,
+                borderRadius: 100,
+                overflow: "hidden",
+              }}
+            >
+              {callAccepted && !callEnded ? (
+                <video
+                  playsInline
+                  ref={userVideo}
+                  autoPlay
+                  style={{ height: "100%", transform: "scaleX(-100%)" }}
+                />
+              ) : null}
+            </div>
+            {userArray.length !== 0 && (
+              <p style={{ textAlign: "center" }}>
+                name : {userArray[0].name} <br />
+                autoFollow : {userArray[0].autoFollow.toString()}
+              </p>
+            )}
           </div>
         </div>
         <div className="myId">

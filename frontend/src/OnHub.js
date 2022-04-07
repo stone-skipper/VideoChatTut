@@ -13,8 +13,7 @@ import { Link } from "react-router-dom";
 
 const socket = io.connect("http://localhost:5000");
 
-function Mobile() {
-  const [mobileControl, setMobileControl] = useState(null);
+function OnHub() {
   const [me, setMe] = useState("");
   const [stream, setStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);
@@ -23,9 +22,9 @@ function Mobile() {
   const [callAccepted, setCallAccepted] = useState(false);
   const [idToCall, setIdToCall] = useState("");
   const [callEnded, setCallEnded] = useState(false);
-  const [dWidth, setDWidth] = useState(0);
-  const [dHeight, setDHeight] = useState(0);
-  const [name, setName] = useState("");
+  const [autoFollow, setAutoFollow] = useState(true);
+
+  const [name, setName] = useState("RP1");
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -34,8 +33,6 @@ function Mobile() {
   const connectionRef = useRef();
 
   useEffect(() => {
-    setDWidth(window.innerWidth);
-    setDHeight(window.innerHeight);
     console.log(searchParams.get("socketid"));
 
     navigator.mediaDevices
@@ -68,9 +65,8 @@ function Mobile() {
         userToCall: id,
         signalData: data,
         from: me,
-        name: mobileControl,
-        width: dWidth,
-        height: dHeight,
+        name: name,
+        autoFollow: autoFollow,
       });
     });
     peer.on("stream", (stream) => {
@@ -95,7 +91,7 @@ function Mobile() {
       socket.emit("answerCall", { signal: data, to: caller });
     });
     peer.on("stream", (stream) => {
-      // userVideo.current.srcObject = stream;
+      userVideo.current.srcObject = stream;
     });
 
     peer.signal(callerSignal);
@@ -106,29 +102,24 @@ function Mobile() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
-  const Btn = ({ number }) => {
-    return (
-      <div
-        style={{
-          width: 80,
-          height: 40,
-          background: "white",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          borderRadius: 5,
-          cursor: "pointer",
-          border:
-            number === mobileControl ? "1px solid blue" : "1px solid lightgrey",
-        }}
-        onClick={() => {
-          setMobileControl(number);
-        }}
-      >
-        {number}
-      </div>
-    );
+
+  const switchMode = () => {
+    setAutoFollow(!autoFollow);
+
+    const peer = new Peer({
+      initiator: false,
+      trickle: true,
+    });
+
+    peer.on("signal", (data) => {
+      socket.emit("switchMode", { name: name, autoFollow: autoFollow });
+    });
+
+    socket.on("callAccepted", (signal) => {
+      peer.signal(signal);
+    });
   };
+
   return (
     <div
       style={{
@@ -139,6 +130,7 @@ function Mobile() {
         justifyContent: "flex-start",
         alignItems: "center",
         overflow: "hidden",
+        textAlign: "center",
       }}
     >
       <div
@@ -149,26 +141,17 @@ function Mobile() {
           top: 0,
         }}
       >
-        <h1 style={{ textAlign: "center", color: "#fff" }}>Mobile Control</h1>
+        <h1 style={{ textAlign: "center", color: "#fff" }}>
+          Remote Participant
+        </h1>
 
         <Link to="/">
           <button variant="outlined">back home</button>
         </Link>
+
         <div
           style={{
-            display: "flex",
-            // display: mobileControl === null ? "flex" : "none",
-            gap: 10,
-            margin: 30,
-          }}
-        >
-          <Btn number={1} />
-          <Btn number={2} /> <Btn number={3} /> <Btn number={4} />
-          <Btn number={5} /> <Btn number={6} />
-        </div>
-        <div
-          style={{
-            display: callAccepted ? "none" : "block",
+            display: "block",
             background: "white",
             padding: 30,
             borderRadius: 10,
@@ -193,49 +176,53 @@ function Mobile() {
               aria-label="call"
               // onClick={() => callUser(idToCall)}
               onClick={() => {
-                if (mobileControl !== null) {
-                  callUser(searchParams.get("socketid"));
-                } else alert("select device number first");
+                callUser(searchParams.get("socketid"));
               }}
             >
               <PhoneIcon fontSize="large" />
             </IconButton>
           )}
+
+          <div>name: {name}</div>
+          <div
+            style={{ background: "blue", cursor: "pointer", color: "white" }}
+            onClick={() => {
+              switchMode();
+            }}
+          >
+            auto follow mode {autoFollow === true ? "on" : "off"}
+          </div>
         </div>
       </div>
 
-      <div
-        style={{
-          height: 300,
-          width: 300,
-          borderRadius: 150,
-          position: "absolute",
-          left: 0,
-          zIndex: -2,
-        }}
-      >
+      <div>
         {stream && (
           <video
             playsInline
             muted
             ref={myVideo}
             autoPlay
-            style={{ height: "100%", objectFit: "contain" }}
+            style={{
+              height: 300,
+              transform: "scaleX(-100%)",
+              position: "absolute",
+              bottom: 0,
+            }}
           />
         )}
       </div>
       <div>
-        {callAccepted && !callEnded ? (
+        {/* {callAccepted && !callEnded ? (
           <video
             playsInline
             ref={userVideo}
             autoPlay
-            style={{ height: "100%" }}
+            style={{ height: "100%", transform: "scaleX(-100%)" }}
           />
-        ) : null}
+        ) : null} */}
       </div>
     </div>
   );
 }
 
-export default Mobile;
+export default OnHub;

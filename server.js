@@ -22,8 +22,13 @@ io.on("connection", (socket) => {
       signal: data.signalData,
       from: data.from,
       name: data.name,
-      width: data.width,
-      height: data.height,
+      autoFollow: data.autoFollow,
+    });
+  });
+
+  socket.on("switchMode", (data) => {
+    io.to(data.userToCall).emit("switchMode", {
+      autoFollow: data.autoFollow,
     });
   });
 
