@@ -74,12 +74,13 @@ function Home() {
         name: name,
       });
     });
-    peer.on("stream", (stream) => {
-      userVideo.current.srcObject = stream;
-    });
+
     socket.on("callAccepted", (signal) => {
       setCallAccepted(true);
       peer.signal(signal);
+      // peer.on("stream", (stream) => {
+      //   userVideo.current.srcObject = stream;
+      // });
     });
 
     connectionRef.current = peer;
@@ -88,7 +89,7 @@ function Home() {
   const answerCall = () => {
     setCallAccepted(true);
     const peer = new Peer({
-      initiator: true,
+      initiator: false,
       trickle: false,
       stream: stream,
     });
@@ -102,9 +103,9 @@ function Home() {
         autoFollow: data.autoFollow,
       });
     });
-    peer.on("stream", (stream) => {
-      userVideo.current.srcObject = stream;
-    });
+    // peer.on("stream", (stream) => {
+    //   userVideo.current.srcObject = stream;
+    // });
     peer.signal(callerSignal);
     connectionRef.current = peer;
   };
@@ -113,17 +114,14 @@ function Home() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
-
+  // const updatePeer = new Peer({
+  //   initiator: true,
+  //   trickle: false,
+  // });
   const moveFeed = () => {
-    const peer = new Peer({
-      initiator: true,
-      trickle: true,
-    });
-    peer.on("signal", (data) => {
-      socket.emit("switchMode", {
-        autoFollow: autoFollow,
-        feedPosition: feedPosition,
-      });
+    socket.emit("switchMode", {
+      autoFollow: autoFollow,
+      feedPosition: feedPosition,
     });
   };
   function downHandler({ key }) {
@@ -190,9 +188,10 @@ function Home() {
                 muted
                 ref={myVideo}
                 autoPlay
-                style={{ width: "300px", transform: "scaleX(-100%)" }}
+                style={{ width: "300px", transform: "scaleX(-1)" }}
               />
             )}
+            <br />
             my video
           </div>
           <div
@@ -204,7 +203,7 @@ function Home() {
               flexDirection: "column",
             }}
           >
-            <div
+            {/* <div
               style={{
                 height: 200,
                 width: 200,
@@ -217,10 +216,14 @@ function Home() {
                   playsInline
                   ref={userVideo}
                   autoPlay
-                  style={{ height: "100%", transform: "scaleX(-100%)" }}
+                  style={{
+                    height: "100%",
+                    transform: "scaleX(-100%)",
+                    background: "blue",
+                  }}
                 />
               ) : null}
-            </div>
+            </div> */}
             {userArray.length !== 0 && (
               <p style={{ textAlign: "center" }}>
                 name : {userArray[0].name} <br />

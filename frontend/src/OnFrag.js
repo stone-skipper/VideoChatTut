@@ -1,13 +1,12 @@
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
-import TextField from "@material-ui/core/TextField";
 import PhoneIcon from "@material-ui/icons/Phone";
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Peer from "simple-peer";
 import io from "socket.io-client";
 import "./App.css";
-import { Link } from "react-router-dom";
+import { motion } from "framer-motion/dist/framer-motion";
 
 const socket = io.connect("http://localhost:5000");
 
@@ -34,12 +33,12 @@ function OnFrag() {
   useEffect(() => {
     console.log(searchParams.get("socketid"));
 
-    // navigator.mediaDevices
-    //   .getUserMedia({ video: true, audio: false })
-    //   .then((stream) => {
-    //     setStream(stream);
-    //     myVideo.current.srcObject = stream;
-    //   });
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        setStream(stream);
+        // myVideo.current.srcObject = stream;
+      });
 
     socket.on("me", (id) => {
       setMe(id);
@@ -86,7 +85,7 @@ function OnFrag() {
   };
 
   const answerCall = () => {
-    // setCallAccepted(true);
+    setCallAccepted(true);
     const peer = new Peer({
       initiator: false,
       trickle: false,
@@ -164,13 +163,8 @@ function OnFrag() {
         }}
       >
         <h1 style={{ textAlign: "center", color: "#fff" }}>
-          Device {deviceId} looking at {feedPosition}, callAccepted{" "}
-          {callAccepted.toString()}
+          Device {deviceId} looking at {feedPosition}
         </h1>
-
-        <Link to="/">
-          <button variant="outlined">back home</button>
-        </Link>
 
         <div
           style={{
@@ -227,21 +221,39 @@ function OnFrag() {
           />
         )}
       </div> */}
-      <div>
-        {callAccepted && !callEnded ? (
+      {callAccepted && !callEnded ? (
+        <motion.div
+          style={{
+            width: 300,
+            height: 300,
+            display: "flex",
+            justifyContent: "center",
+            borderRadius: 150,
+            overflow: "hidden",
+            background: "blue",
+          }}
+          initial={
+            {
+              // x: feedPosition < deviceId ? -200 : 500,
+            }
+          }
+          animate={{
+            opacity: feedPosition === deviceId ? 1 : 0.5,
+          }}
+        >
           <video
             playsInline
             ref={userVideo}
             autoPlay
-            style={{ height: "300px", transform: "scaleX(-100%)" }}
+            style={{ height: "100%", transform: "scaleX(-100%)" }}
           />
-        ) : null}
-      </div>
+        </motion.div>
+      ) : null}
       <div
         style={{
           width: "100vw",
           position: "absolute",
-          bottom: 20,
+          bottom: 50,
           display: "flex",
           justifyContent: "center",
           gap: 20,
