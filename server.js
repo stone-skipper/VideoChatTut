@@ -22,14 +22,16 @@ io.on("connection", (socket) => {
       signal: data.signalData,
       from: data.from,
       name: data.name,
-      autoFollow: data.autoFollow,
     });
+    console.log("callUser", data);
   });
 
   socket.on("switchMode", (data) => {
-    io.to(data.userToCall).emit("switchMode", {
+    socket.broadcast.emit("switchMode", {
       autoFollow: data.autoFollow,
+      feedPosition: data.feedPosition,
     });
+    console.log("switchMode", data.feedPosition);
   });
 
   socket.on("answerCall", (data) => {

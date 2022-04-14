@@ -23,21 +23,23 @@ function Home() {
   const [callAccepted, setCallAccepted] = useState(false);
   const [idToCall, setIdToCall] = useState("");
   const [callEnded, setCallEnded] = useState(false);
-  const [name, setName] = useState("desktop");
+  const [name, setName] = useState("Remote Participant");
   const [userArray, setUserArray] = useState([]);
+  const [feedPosition, setFeedPosition] = useState(1);
+  const [autoFollow, setAutoFollow] = useState(true);
   var uArray = [];
   const myVideo = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
-  const baseURL = "http://localhost:3000/hub?socketid=";
+  const baseURL = "http://localhost:3000/frag?socketid=";
 
   useEffect(() => {
-    // navigator.mediaDevices
-    //   .getUserMedia({ video: true, audio: false })
-    //   .then((stream) => {
-    //     setStream(stream);
-    //     // myVideo.current.srcObject = stream;
-    //   });
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        setStream(stream);
+        myVideo.current.srcObject = stream;
+      });
 
     socket.on("me", (id) => {
       setMe(id);
@@ -49,11 +51,11 @@ function Home() {
       setName(data.name);
       setCallerSignal(data.signal);
       uArray.push({ name: data.name, autoFollow: data.autoFollow });
-      console.log(uArray);
       setUserArray(uArray);
     });
 
     socket.on("switchMode", (data) => {
+      moveFeed();
       console.log("switching mode", data);
     });
   }, []);
@@ -86,7 +88,7 @@ function Home() {
   const answerCall = () => {
     setCallAccepted(true);
     const peer = new Peer({
-      initiator: false,
+      initiator: true,
       trickle: false,
       stream: stream,
     });
@@ -95,15 +97,13 @@ function Home() {
         signal: data,
         to: caller,
       });
-    });
-    peer.on("stream", (stream) => {
-      userVideo.current.srcObject = stream;
-    });
-    peer.on("signal", (data) => {
       socket.emit("switchMode", {
         name: data.name,
         autoFollow: data.autoFollow,
       });
+    });
+    peer.on("stream", (stream) => {
+      userVideo.current.srcObject = stream;
     });
     peer.signal(callerSignal);
     connectionRef.current = peer;
@@ -113,6 +113,44 @@ function Home() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
+
+  const moveFeed = () => {
+    const peer = new Peer({
+      initiator: true,
+      trickle: true,
+    });
+    peer.on("signal", (data) => {
+      socket.emit("switchMode", {
+        autoFollow: autoFollow,
+        feedPosition: feedPosition,
+      });
+    });
+  };
+  function downHandler({ key }) {
+    console.log(key);
+    if (key === "1") {
+      setFeedPosition(1);
+    } else if (key === "2") {
+      setFeedPosition(2);
+    } else if (key === "3") {
+      setFeedPosition(3);
+    }
+  }
+
+  function upHandler({ key }) {}
+
+  useEffect(() => {
+    window.addEventListener("keydown", downHandler);
+    window.addEventListener("keyup", upHandler);
+    return () => {
+      window.removeEventListener("keydown", downHandler);
+      window.removeEventListener("keyup", upHandler);
+    };
+  }, []);
+
+  useEffect(() => {
+    moveFeed();
+  }, [feedPosition]);
 
   return (
     <>
@@ -128,7 +166,7 @@ function Home() {
         }}
       >
         <h1 style={{ textAlign: "center", color: "#fff" }}>
-          Hybrid Meeting Experience Demo
+          Remote Participant, looking at {feedPosition}
         </h1>
 
         <div
@@ -146,7 +184,7 @@ function Home() {
         </div>
         <div>
           <div>
-            {/* {stream && (
+            {stream && (
               <video
                 playsInline
                 muted
@@ -154,7 +192,8 @@ function Home() {
                 autoPlay
                 style={{ width: "300px", transform: "scaleX(-100%)" }}
               />
-            )} */}
+            )}
+            my video
           </div>
           <div
             style={{
@@ -185,50 +224,15 @@ function Home() {
             {userArray.length !== 0 && (
               <p style={{ textAlign: "center" }}>
                 name : {userArray[0].name} <br />
-                autoFollow : {userArray[0].autoFollow.toString()}
               </p>
             )}
           </div>
         </div>
-        <div className="myId">
-          <CopyToClipboard text={me} style={{ marginBottom: "2rem" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AssignmentIcon fontSize="large" />}
-            >
-              Copy ID
-            </Button>
-          </CopyToClipboard>
 
-          {/* <TextField
-            id="filled-basic"
-            label="ID to call"
-            variant="filled"
-            value={idToCall}
-            onChange={(e) => setIdToCall(e.target.value)}
-          /> */}
-          {/* <div className="call-button">
-            {callAccepted && !callEnded ? (
-              <Button variant="contained" color="secondary" onClick={leaveCall}>
-                End Call
-              </Button>
-            ) : (
-              <IconButton
-                color="primary"
-                aria-label="call"
-                onClick={() => callUser(idToCall)}
-              >
-                <PhoneIcon fontSize="large" />
-              </IconButton>
-            )}
-            {idToCall}
-          </div> */}
-        </div>
         <div>
           {receivingCall && !callAccepted ? (
             <div className="caller">
-              <h1>{name.toString()} is connecting...</h1>
+              <h1>{name.toString()} is calling...</h1>
               <Button variant="contained" color="primary" onClick={answerCall}>
                 Connect
               </Button>
