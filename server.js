@@ -48,4 +48,6 @@ server.listen(process.env.PORT || PORT, function () {
   );
 });
 
-app.get("/", (req, res) => res.send("Hello World!"));
+app.get("/", (req, res) =>
+  res.send("Hello World! Server is running on " + PORT)
+);
