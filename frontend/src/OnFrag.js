@@ -8,7 +8,7 @@ import io from "socket.io-client";
 import "./App.css";
 import { motion } from "framer-motion/dist/framer-motion";
 
-const socket = io.connect("http://localhost:5000");
+const socket = io.connect("https://etkqn5.sse.codesandbox.io/");
 
 function OnFrag() {
   const [me, setMe] = useState("");
