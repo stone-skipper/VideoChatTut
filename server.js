@@ -9,6 +9,7 @@ const io = require("socket.io")(server, {
   },
 });
 const PORT = process.env.PORT || 5000;
+const INDEX = "/index.html";
 
 io.on("connection", (socket) => {
   socket.emit("me", socket.id);
@@ -39,4 +40,10 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(PORT, () => console.log(`server is running on port ${PORT}`));
+server.listen(process.env.PORT || 3000, function () {
+  console.log(
+    "Express server listening on port %d in %s mode",
+    this.address().port,
+    app.settings.env
+  );
+});
