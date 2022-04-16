@@ -8,8 +8,8 @@ const io = require("socket.io")(server, {
     methods: ["GET", "POST"],
   },
 });
+const PORT = process.env.PORT || 5000;
 
-const PORT = 5000;
 io.on("connection", (socket) => {
   socket.emit("me", socket.id);
 
