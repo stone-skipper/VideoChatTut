@@ -12,7 +12,7 @@ import io from "socket.io-client";
 import "./App.css";
 import { Link } from "react-router-dom";
 
-const socket = io.connect("https://etkqn5.sse.codesandbox.io/");
+const socket = io.connect("https://localhost:5000");
 
 function Home() {
   const [me, setMe] = useState("");
