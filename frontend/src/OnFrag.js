@@ -49,7 +49,7 @@ function OnFrag() {
       setCaller(data.from);
       setName(data.name);
       setCallerSignal(data.signal);
-      setFeedPosition(data.feedPosition);
+      // setFeedPosition(data.feedPosition);
     });
 
     socket.on("switchMode", (data) => {

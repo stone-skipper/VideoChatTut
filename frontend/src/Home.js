@@ -114,10 +114,7 @@ function Home() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
-  // const updatePeer = new Peer({
-  //   initiator: true,
-  //   trickle: false,
-  // });
+
   const moveFeed = () => {
     socket.emit("switchMode", {
       autoFollow: autoFollow,
