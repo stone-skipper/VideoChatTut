@@ -31,7 +31,7 @@ function Home() {
   const myVideo = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
-  const baseURL = "http://localhost:3000/frag?socketid=";
+  const baseURL = window.location + "frag?socketid=";
 
   useEffect(() => {
     navigator.mediaDevices
