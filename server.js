@@ -13,6 +13,7 @@ const INDEX = "/index.html";
 
 io.on("connection", (socket) => {
   socket.emit("me", socket.id);
+  console.log(socket.id);
 
   socket.on("disconnect", () => {
     socket.broadcast.emit("callEnded");
@@ -31,8 +32,12 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("switchMode", {
       autoFollow: data.autoFollow,
       feedPosition: data.feedPosition,
+      blur: data.blur,
+      opacity: data.opacity,
+      openHole: data.openHole,
+      holePos: data.holePos,
     });
-    console.log("switchMode", data.feedPosition);
+    console.log("switchMode", data.openHole);
   });
 
   socket.on("answerCall", (data) => {

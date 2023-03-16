@@ -5,6 +5,7 @@ import AssignmentIcon from "@material-ui/icons/Assignment";
 import PhoneIcon from "@material-ui/icons/Phone";
 import React, { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { motion } from "framer-motion/dist/framer-motion";
 
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Peer from "simple-peer";
@@ -12,6 +13,7 @@ import io from "socket.io-client";
 import "./App.css";
 import { Link } from "react-router-dom";
 
+// const socket = io.connect("http://localhost:5000");
 const socket = io.connect("https://ancient-bayou-47853.herokuapp.com/");
 
 function Home() {
@@ -30,8 +32,15 @@ function Home() {
   var uArray = [];
   const myVideo = useRef();
   const userVideo = useRef();
+  const userVideo2 = useRef();
   const connectionRef = useRef();
   const baseURL = window.location + "frag?socketid=";
+
+  const [openHole, setOpenHole] = useState(false);
+  const [holePos, setHolePos] = useState({ x: 0, y: 0 });
+  const [holeSize, setHoleSize] = useState(300);
+  const [opacity, setOpacity] = useState(0.3);
+  const [blur, setBlur] = useState(30);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -78,9 +87,10 @@ function Home() {
     socket.on("callAccepted", (signal) => {
       setCallAccepted(true);
       peer.signal(signal);
-      // peer.on("stream", (stream) => {
-      //   userVideo.current.srcObject = stream;
-      // });
+      peer.on("stream", (stream) => {
+        userVideo.current.srcObject = stream;
+        userVideo2.current.srcObject = stream;
+      });
     });
 
     connectionRef.current = peer;
@@ -99,13 +109,18 @@ function Home() {
         to: caller,
       });
       socket.emit("switchMode", {
-        name: data.name,
-        autoFollow: data.autoFollow,
+        autoFollow: autoFollow,
+        feedPosition: feedPosition,
+        blur: blur,
+        opacity: opacity,
+        holePos: holePos,
+        openHole: openHole,
       });
     });
-    // peer.on("stream", (stream) => {
-    //   userVideo.current.srcObject = stream;
-    // });
+    peer.on("stream", (stream) => {
+      userVideo.current.srcObject = stream;
+      userVideo2.current.srcObject = stream;
+    });
     peer.signal(callerSignal);
     connectionRef.current = peer;
   };
@@ -119,6 +134,10 @@ function Home() {
     socket.emit("switchMode", {
       autoFollow: autoFollow,
       feedPosition: feedPosition,
+      blur: blur,
+      opacity: opacity,
+      holePos: holePos,
+      openHole: openHole,
     });
   };
   function downHandler({ key }) {
@@ -145,25 +164,74 @@ function Home() {
 
   useEffect(() => {
     moveFeed();
-  }, [feedPosition]);
+  }, [openHole, holePos, blur, opacity]);
 
   return (
-    <>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        overflow: "hidden",
+      }}
+    >
       <div
         style={{
-          width: "100vw",
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          alignItems: "center",
-          overflow: "hidden",
+          width: "fit-content",
+          height: "fit-content",
+          position: "absolute",
+          background: "blue",
+          bottom: 0,
+          right: 0,
+          zIndex: 10,
         }}
       >
-        <h1 style={{ textAlign: "center", color: "#fff" }}>
-          Remote Participant, looking at {feedPosition}
-        </h1>
+        {stream && (
+          <video
+            playsInline
+            muted
+            ref={myVideo}
+            autoPlay
+            style={{
+              width: 300,
+              height: 200,
+              transform: "scaleX(-1)",
+              objectFit: "cover",
+            }}
+          />
+        )}
+        <div
+          style={{
+            position: "absolute",
+            background: "black",
+            color: "white",
+            bottom: 0,
+            right: 0,
+          }}
+        >
+          my view
+        </div>
+      </div>
 
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          position: "absolute",
+          flexDirection: "column",
+          alignItems: "center",
+          zIndex: 10,
+        }}
+      >
+        {/* header */}
+        <h1 style={{ textAlign: "center", color: "#fff" }}>
+          Magic wall (moderator)
+        </h1>
+        <p style={{ textAlign: "center", color: "#fff" }}> socket id :{me}</p>
         <div
           style={{
             display: "flex",
@@ -177,70 +245,159 @@ function Home() {
         >
           <QRCodeSVG value={baseURL + me} size={50} />,
         </div>
-        <div>
-          <div>
-            {stream && (
-              <video
-                playsInline
-                muted
-                ref={myVideo}
-                autoPlay
-                style={{ width: "300px", transform: "scaleX(-1)" }}
-              />
-            )}
-            <br />
-            my video
-          </div>
-          <div
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          opacity {opacity}
+          <input
+            type="range"
+            value={opacity}
+            onChange={(e) => {
+              setOpacity(e.target.value);
+            }}
+            min={0}
+            max={1}
+            step={0.1}
+            label={"opacity"}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          blur {blur}
+          <input
+            type="range"
+            value={blur}
+            onChange={(e) => {
+              setBlur(e.target.value);
+            }}
+            min={0}
+            max={100}
+          />
+        </div>
+      </div>
+
+      {callAccepted && !callEnded ? (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
+          }}
+        >
+          <motion.div
             style={{
-              height: "fit-content",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "column",
+              width: "100%",
+              height: "100%",
+              overflow: "hidden",
+              filter: "blur(" + blur + "px)",
+              opacity: opacity,
+              position: "absolute",
+              top: 0,
+              left: 0,
             }}
           >
-            {/* <div
+            {/* for blur */}
+            <video
+              playsInline
+              ref={userVideo}
+              autoPlay
               style={{
-                height: 200,
-                width: 200,
-                borderRadius: 100,
+                height: "100%",
+                width: "100%",
+                transform: "scaleX(-100%)",
+                objectFit: "cover",
+              }}
+            />
+          </motion.div>
+          <motion.div
+            style={{
+              width: "100%",
+              height: "100%",
+              overflow: "hidden",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 3,
+              borderRadius: holeSize / 2,
+            }}
+            onClick={(e) => {
+              console.log(e.clientX, e.clientY);
+              setOpenHole(!openHole);
+              setHolePos({ x: e.clientX, y: e.clientY });
+            }}
+          >
+            <motion.div
+              style={{
                 overflow: "hidden",
+                position: "relative",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: holeSize,
+                height: holeSize,
+                borderRadius: holeSize / 2,
+              }}
+              animate={{
+                left: holePos.x - holeSize / 2,
+                top: holePos.y - holeSize / 2,
               }}
             >
-              {callAccepted && !callEnded ? (
+              <motion.div
+                style={{
+                  borderRadius: holeSize / 2,
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+                animate={{
+                  height: openHole === true ? holeSize : 0,
+                  width: openHole === true ? holeSize : 0,
+                }}
+              >
                 <video
                   playsInline
-                  ref={userVideo}
+                  ref={userVideo2}
                   autoPlay
                   style={{
-                    height: "100%",
+                    height: "100vh",
+                    width: "100vw",
                     transform: "scaleX(-100%)",
-                    background: "blue",
+                    objectFit: "cover",
+                    position: "absolute",
+                    left: 0 - holePos.x + holeSize / 2,
+                    top: 0 - holePos.y + holeSize / 2,
                   }}
                 />
-              ) : null}
-            </div> */}
-            {userArray.length !== 0 && (
-              <p style={{ textAlign: "center" }}>
-                name : {userArray[0].name} <br />
-              </p>
-            )}
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
+      ) : null}
 
-        <div>
-          {receivingCall && !callAccepted ? (
-            <div className="caller">
+      <div>
+        {receivingCall && !callAccepted ? (
+          <div
+            className="caller"
+            style={{
+              width: "100%",
+              height: "100%",
+              background: "rgba(0,0,0,0.3)",
+              position: "absolute",
+              zIndex: 5,
+              top: 0,
+              left: 0,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div>
               <h1>{name.toString()} is calling...</h1>
               <Button variant="contained" color="primary" onClick={answerCall}>
                 Connect
               </Button>
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
-    </>
+    </div>
   );
 }
 

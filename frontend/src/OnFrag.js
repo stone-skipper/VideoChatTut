@@ -8,6 +8,7 @@ import io from "socket.io-client";
 import "./App.css";
 import { motion } from "framer-motion/dist/framer-motion";
 
+// const socket = io.connect("http://localhost:5000");
 const socket = io.connect("https://ancient-bayou-47853.herokuapp.com/");
 
 function OnFrag() {
@@ -28,7 +29,15 @@ function OnFrag() {
 
   const myVideo = useRef();
   const userVideo = useRef();
+  const userVideo2 = useRef();
+
   const connectionRef = useRef();
+
+  const [openHole, setOpenHole] = useState(false);
+  const [holePos, setHolePos] = useState({ x: 0, y: 0 });
+  const [holeSize, setHoleSize] = useState(300);
+  const [opacity, setOpacity] = useState(0.3);
+  const [blur, setBlur] = useState(30);
 
   useEffect(() => {
     console.log(searchParams.get("socketid"));
@@ -55,6 +64,11 @@ function OnFrag() {
     socket.on("switchMode", (data) => {
       setFeedPosition(data.feedPosition);
       setAutoFollow(data.autoFollow);
+      setOpenHole(data.openHole);
+      setBlur(data.blur);
+      setOpacity(data.opacity);
+      setHolePos(data.holePos);
+
       console.log("switching mode!");
     });
   }, []);
@@ -75,6 +89,7 @@ function OnFrag() {
     });
     peer.on("stream", (stream) => {
       userVideo.current.srcObject = stream;
+      userVideo2.current.srcObject = stream;
     });
     socket.on("callAccepted", (signal) => {
       setCallAccepted(true);
@@ -96,6 +111,7 @@ function OnFrag() {
     });
     peer.on("stream", (stream) => {
       userVideo.current.srcObject = stream;
+      userVideo2.current.srcObject = stream;
     });
 
     peer.signal(callerSignal);
@@ -110,6 +126,10 @@ function OnFrag() {
     peer.on("switchMode", (data) => {
       setFeedPosition(data.feedPosition);
       setAutoFollow(data.autoFollow);
+      setOpenHole(data.openHole);
+      setBlur(data.blur);
+      setOpacity(data.opacity);
+      setHolePos(data.holePose);
     });
   };
 
@@ -117,29 +137,6 @@ function OnFrag() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
-
-  function DeviceSelect({ number, selected }) {
-    return (
-      <div
-        style={{
-          width: 50,
-          height: 30,
-          background: "white",
-          borderRadius: 5,
-          cursor: "pointer",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          border: number === selected ? "2px solid blue" : "2px solid white",
-        }}
-        onClick={() => {
-          setDeviceId(number);
-        }}
-      >
-        {number}
-      </div>
-    );
-  }
 
   return (
     <div
@@ -160,11 +157,10 @@ function OnFrag() {
           height: "fit-content",
           position: "absolute",
           top: 0,
+          zIndex: 5,
         }}
       >
-        <h1 style={{ textAlign: "center", color: "#fff" }}>
-          Device {deviceId} looking at {feedPosition}
-        </h1>
+        <h1 style={{ textAlign: "center", color: "#fff" }}>Magic wall</h1>
 
         <div
           style={{
@@ -176,17 +172,45 @@ function OnFrag() {
             margin: "0 auto",
           }}
         >
-          {/* <TextField
-            id="filled-basic"
-            label="ID to call"
-            variant="filled"
-            value={idToCall}
-            onChange={(e) => setIdToCall(e.target.value)}
-          /> */}
           {callAccepted && !callEnded ? (
-            <Button variant="contained" color="secondary" onClick={leaveCall}>
-              End Call
-            </Button>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+              }}
+            >
+              <Button variant="contained" color="secondary" onClick={leaveCall}>
+                End Call
+              </Button>
+              <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+                opacity {opacity}
+                <input
+                  type="range"
+                  value={opacity}
+                  onChange={(e) => {
+                    setOpacity(e.target.value);
+                  }}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  label={"opacity"}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+                blur {blur}
+                <input
+                  type="range"
+                  value={blur}
+                  onChange={(e) => {
+                    setBlur(e.target.value);
+                  }}
+                  min={0}
+                  max={100}
+                />
+              </div>
+            </div>
           ) : (
             <IconButton
               color="primary"
@@ -200,8 +224,7 @@ function OnFrag() {
             </IconButton>
           )}
 
-          <div>name: {deviceId}</div>
-          <div>auto follow mode {autoFollow === true ? "on" : "off"}</div>
+          <div>openhole : {openHole.toString()}</div>
         </div>
       </div>
 
@@ -222,47 +245,101 @@ function OnFrag() {
         )}
       </div> */}
       {callAccepted && !callEnded ? (
-        <motion.div
+        <div
           style={{
-            width: 300,
-            height: 300,
-            display: "flex",
-            justifyContent: "center",
-            borderRadius: 150,
-            overflow: "hidden",
-            background: "blue",
-          }}
-          initial={
-            {
-              // x: feedPosition < deviceId ? -200 : 500,
-            }
-          }
-          animate={{
-            opacity: feedPosition === deviceId ? 1 : 0.5,
+            width: "100%",
+            height: "100%",
+            position: "relative",
           }}
         >
-          <video
-            playsInline
-            ref={userVideo}
-            autoPlay
-            style={{ height: "100%", transform: "scaleX(-100%)" }}
-          />
-        </motion.div>
+          <motion.div
+            style={{
+              width: "100%",
+              height: "100%",
+              overflow: "hidden",
+              filter: "blur(" + blur + "px)",
+              opacity: opacity,
+              position: "absolute",
+              top: 0,
+              left: 0,
+            }}
+          >
+            {/* for blur */}
+            <video
+              playsInline
+              ref={userVideo}
+              autoPlay
+              style={{
+                height: "100%",
+                width: "100%",
+                transform: "scaleX(-100%)",
+                objectFit: "cover",
+              }}
+            />
+          </motion.div>
+          <motion.div
+            style={{
+              width: "100%",
+              height: "100%",
+              overflow: "hidden",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 3,
+              borderRadius: holeSize / 2,
+            }}
+            onClick={(e) => {
+              console.log(e.clientX, e.clientY);
+              setOpenHole(!openHole);
+              setHolePos({ x: e.clientX, y: e.clientY });
+            }}
+          >
+            <motion.div
+              style={{
+                overflow: "hidden",
+                position: "relative",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: holeSize,
+                height: holeSize,
+                borderRadius: holeSize / 2,
+              }}
+              animate={{
+                left: holePos.x - holeSize / 2,
+                top: holePos.y - holeSize / 2,
+              }}
+            >
+              <motion.div
+                style={{
+                  borderRadius: holeSize / 2,
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+                animate={{
+                  height: openHole === true ? holeSize : 0,
+                  width: openHole === true ? holeSize : 0,
+                }}
+              >
+                <video
+                  playsInline
+                  ref={userVideo2}
+                  autoPlay
+                  style={{
+                    height: "100vh",
+                    width: "100vw",
+                    transform: "scaleX(-100%)",
+                    objectFit: "cover",
+                    position: "absolute",
+                    left: 0 - holePos.x + holeSize / 2,
+                    top: 0 - holePos.y + holeSize / 2,
+                  }}
+                />
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
       ) : null}
-      <div
-        style={{
-          width: "100vw",
-          position: "absolute",
-          bottom: 50,
-          display: "flex",
-          justifyContent: "center",
-          gap: 20,
-        }}
-      >
-        <DeviceSelect number={1} selected={deviceId} />
-        <DeviceSelect number={2} selected={deviceId} />
-        <DeviceSelect number={3} selected={deviceId} />
-      </div>
     </div>
   );
 }
