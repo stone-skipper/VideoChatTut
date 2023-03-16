@@ -24,6 +24,7 @@ function OnFrag() {
   const [deviceId, setDeviceId] = useState(0);
   const [feedPosition, setFeedPosition] = useState(null);
   const [name, setName] = useState("RP1");
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -71,6 +72,8 @@ function OnFrag() {
 
       console.log("switching mode!");
     });
+
+    setScreenSize({ width: window.innerWidth, height: window.innerHeight });
   }, []);
 
   const callUser = (id) => {
@@ -306,7 +309,7 @@ function OnFrag() {
                 borderRadius: holeSize / 2,
               }}
               animate={{
-                left: holePos.x - holeSize / 2,
+                left: screenSize.width - (holePos.x + holeSize / 2),
                 top: holePos.y - holeSize / 2,
               }}
             >
@@ -331,7 +334,7 @@ function OnFrag() {
                     transform: "scaleX(-100%)",
                     objectFit: "cover",
                     position: "absolute",
-                    left: 0 - holePos.x + holeSize / 2,
+                    right: 0 - holePos.x + holeSize / 2,
                     top: 0 - holePos.y + holeSize / 2,
                   }}
                 />

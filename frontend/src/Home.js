@@ -238,6 +238,7 @@ function Home() {
           }}
           onClick={() => {
             window.open(baseURL + me);
+            navigator.clipboard.writeText(baseURL + me);
           }}
         >
           <QRCodeSVG value={baseURL + me} size={50} />,
@@ -268,6 +269,7 @@ function Home() {
             max={100}
           />
         </div>
+        openHole : {openHole.toString()}
       </div>
 
       {callAccepted && !callEnded ? (
