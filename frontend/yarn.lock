@@ -14463,13 +14463,6 @@ rc@^1.2.7, rc@^1.2.8:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-360-cli@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/react-360-cli/-/react-360-cli-1.1.0.tgz#e71993f249e25ff35e068e84e8f0a3bbd4fcb5dd"
-  integrity sha512-Oi1qIkiDZI6BTonOSEzlHKg6si6jqrFy2j/AdtuP711v9em/7XI2Ud3SnLagFgEhYMWOQqfKjQL/kXC+ZYnZCw==
-  dependencies:
-    chalk "^1.1.3"
-
 react-app-polyfill@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/react-app-polyfill/-/react-app-polyfill-2.0.0.tgz#a0bea50f078b8a082970a9d853dc34b6dcc6a3cf"
