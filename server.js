@@ -35,6 +35,7 @@ io.on("connection", (socket) => {
       blur: data.blur,
       opacity: data.opacity,
       openHole: data.openHole,
+      holeSize: data.holeSize,
       holePos: data.holePos,
     });
     console.log("switchMode", data.openHole);

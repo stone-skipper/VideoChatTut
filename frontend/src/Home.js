@@ -26,6 +26,7 @@ function Home() {
   const [userArray, setUserArray] = useState([]);
   const [feedPosition, setFeedPosition] = useState(1);
   const [autoFollow, setAutoFollow] = useState(true);
+
   var uArray = [];
   const myVideo = useRef();
   const userVideo = useRef();
@@ -35,7 +36,7 @@ function Home() {
 
   const [openHole, setOpenHole] = useState(false);
   const [holePos, setHolePos] = useState({ x: 0, y: 0 });
-  const [holeSize, setHoleSize] = useState(300);
+  const [holeSize, setHoleSize] = useState(800);
   const [opacity, setOpacity] = useState(0.3);
   const [blur, setBlur] = useState(30);
 
@@ -111,6 +112,7 @@ function Home() {
         blur: blur,
         opacity: opacity,
         holePos: holePos,
+        holeSize: holeSize,
         openHole: openHole,
       });
     });
@@ -134,6 +136,7 @@ function Home() {
       blur: blur,
       opacity: opacity,
       holePos: holePos,
+      holeSize: holeSize,
       openHole: openHole,
     });
   };
@@ -161,7 +164,7 @@ function Home() {
 
   useEffect(() => {
     moveFeed();
-  }, [openHole, holePos, blur, opacity]);
+  }, [openHole, holePos, blur, opacity, holeSize]);
 
   return (
     <div
@@ -269,6 +272,18 @@ function Home() {
             max={100}
           />
         </div>
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          holeSize {holeSize}
+          <input
+            type="range"
+            value={holeSize}
+            onChange={(e) => {
+              setHoleSize(e.target.value);
+            }}
+            min={0}
+            max={1000}
+          />
+        </div>
         openHole : {openHole.toString()}
       </div>
 
@@ -314,7 +329,6 @@ function Home() {
               top: 0,
               left: 0,
               zIndex: 3,
-              borderRadius: holeSize / 2,
             }}
             onClick={(e) => {
               console.log(e.clientX, e.clientY);
@@ -329,27 +343,30 @@ function Home() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                width: holeSize,
-                height: holeSize,
-                borderRadius: holeSize / 2,
+                aspectRatio: 1 / 1,
+                // background: "blue",
               }}
               animate={{
                 left: holePos.x - holeSize / 2,
                 top: holePos.y - holeSize / 2,
+                width: holeSize,
+                height: holeSize,
+                borderRadius: holeSize / 2,
               }}
             >
               <motion.div
                 style={{
-                  borderRadius: holeSize / 2,
                   overflow: "hidden",
                   position: "relative",
                 }}
                 animate={{
                   height: openHole === true ? holeSize : 0,
                   width: openHole === true ? holeSize : 0,
+                  borderRadius: holeSize / 2,
+                  // background: "red",
                 }}
               >
-                <video
+                <motion.video
                   playsInline
                   ref={userVideo2}
                   autoPlay
@@ -359,6 +376,8 @@ function Home() {
                     transform: "scaleX(-100%)",
                     objectFit: "cover",
                     position: "absolute",
+                  }}
+                  animate={{
                     left: 0 - holePos.x + holeSize / 2,
                     top: 0 - holePos.y + holeSize / 2,
                   }}
