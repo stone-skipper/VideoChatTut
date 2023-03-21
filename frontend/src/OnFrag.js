@@ -36,7 +36,7 @@ function OnFrag() {
 
   const [openHole, setOpenHole] = useState(false);
   const [holePos, setHolePos] = useState({ x: 0, y: 0 });
-  const [holeSize, setHoleSize] = useState(300);
+  const [holeSize, setHoleSize] = useState(800);
   const [opacity, setOpacity] = useState(0.3);
   const [blur, setBlur] = useState(30);
 
@@ -69,6 +69,7 @@ function OnFrag() {
       setBlur(data.blur);
       setOpacity(data.opacity);
       setHolePos(data.holePos);
+      setHoleSize(data.holeSize);
 
       console.log("switching mode!");
     });
@@ -133,6 +134,7 @@ function OnFrag() {
       setBlur(data.blur);
       setOpacity(data.opacity);
       setHolePos(data.holePose);
+      setHoleSize(data.holeSize);
     });
   };
 
@@ -211,6 +213,18 @@ function OnFrag() {
                   }}
                   min={0}
                   max={100}
+                />
+              </div>
+              <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+                holeSize {holeSize}
+                <input
+                  type="range"
+                  value={holeSize}
+                  onChange={(e) => {
+                    setHoleSize(e.target.value);
+                  }}
+                  min={0}
+                  max={1000}
                 />
               </div>
             </div>
@@ -304,24 +318,24 @@ function OnFrag() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+              }}
+              animate={{
                 width: holeSize,
                 height: holeSize,
                 borderRadius: holeSize / 2,
-              }}
-              animate={{
                 left: screenSize.width - (holePos.x + holeSize / 2),
                 top: holePos.y - holeSize / 2,
               }}
             >
               <motion.div
                 style={{
-                  borderRadius: holeSize / 2,
                   overflow: "hidden",
                   position: "relative",
                 }}
                 animate={{
                   height: openHole === true ? holeSize : 0,
                   width: openHole === true ? holeSize : 0,
+                  borderRadius: holeSize / 2,
                 }}
               >
                 <video

@@ -343,14 +343,14 @@ function Home() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                aspectRatio: 1 / 1,
+                width: holeSize,
+                height: holeSize,
                 // background: "blue",
               }}
               animate={{
                 left: holePos.x - holeSize / 2,
                 top: holePos.y - holeSize / 2,
-                width: holeSize,
-                height: holeSize,
+
                 borderRadius: holeSize / 2,
               }}
             >
@@ -358,12 +358,11 @@ function Home() {
                 style={{
                   overflow: "hidden",
                   position: "relative",
-                }}
-                animate={{
                   height: openHole === true ? holeSize : 0,
                   width: openHole === true ? holeSize : 0,
+                }}
+                animate={{
                   borderRadius: holeSize / 2,
-                  // background: "red",
                 }}
               >
                 <motion.video
