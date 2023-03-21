@@ -6,8 +6,8 @@ import { useSearchParams } from "react-router-dom";
 import Peer from "simple-peer";
 import io from "socket.io-client";
 import "./App.css";
-import { motion } from "framer-motion/dist/framer-motion";
-
+// import { motion } from "framer-motion/dist/framer-motion";
+import { motion } from "framer-motion";
 // const socket = io.connect("http://localhost:5000");
 const socket = io.connect("https://ancient-bayou-47853.herokuapp.com/");
 
@@ -158,7 +158,7 @@ function OnFrag() {
     >
       <div
         style={{
-          width: "100vw",
+          width: "fit-content",
           height: "fit-content",
           position: "absolute",
           top: 0,
@@ -242,6 +242,9 @@ function OnFrag() {
           )}
 
           <div>openhole : {openHole.toString()}</div>
+          <div>
+            {callAccepted && !callEnded ? "connected" : "not connected"}
+          </div>
         </div>
       </div>
 
@@ -303,7 +306,6 @@ function OnFrag() {
               top: 0,
               left: 0,
               zIndex: 3,
-              borderRadius: holeSize / 2,
             }}
             onClick={(e) => {
               console.log(e.clientX, e.clientY);
@@ -338,7 +340,7 @@ function OnFrag() {
                   borderRadius: holeSize / 2,
                 }}
               >
-                <video
+                <motion.video
                   playsInline
                   ref={userVideo2}
                   autoPlay
@@ -348,6 +350,8 @@ function OnFrag() {
                     transform: "scaleX(-100%)",
                     objectFit: "cover",
                     position: "absolute",
+                  }}
+                  animate={{
                     right: 0 - holePos.x + holeSize / 2,
                     top: 0 - holePos.y + holeSize / 2,
                   }}

@@ -2,8 +2,8 @@ import Button from "@material-ui/core/Button";
 
 import React, { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { motion } from "framer-motion/dist/framer-motion";
-
+// import { motion } from "framer-motion/dist/framer-motion";
+import { motion } from "framer-motion";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Peer from "simple-peer";
 import io from "socket.io-client";
@@ -164,6 +164,7 @@ function Home() {
 
   useEffect(() => {
     moveFeed();
+    console.log(Number.isInteger(holeSize));
   }, [openHole, holePos, blur, opacity, holeSize]);
 
   return (
@@ -218,20 +219,20 @@ function Home() {
 
       <div
         style={{
-          width: "100%",
+          width: "fit-content",
+          height: "fit-content",
           display: "flex",
           justifyContent: "center",
           position: "absolute",
           flexDirection: "column",
           alignItems: "center",
           zIndex: 10,
+          color: "black",
         }}
       >
         {/* header */}
-        <h1 style={{ textAlign: "center", color: "#fff" }}>
-          Magic wall (moderator)
-        </h1>
-        <p style={{ textAlign: "center", color: "#fff" }}> socket id :{me}</p>
+        <h1 style={{ textAlign: "center" }}>Magic wall (moderator)</h1>
+        <p style={{ textAlign: "center" }}> socket id :{me}</p>
         <div
           style={{
             display: "flex",
@@ -252,7 +253,7 @@ function Home() {
             type="range"
             value={opacity}
             onChange={(e) => {
-              setOpacity(e.target.value);
+              setOpacity(parseInt(e.target.value));
             }}
             min={0}
             max={1}
@@ -266,7 +267,7 @@ function Home() {
             type="range"
             value={blur}
             onChange={(e) => {
-              setBlur(e.target.value);
+              setBlur(parseInt(e.target.value));
             }}
             min={0}
             max={100}
@@ -278,7 +279,7 @@ function Home() {
             type="range"
             value={holeSize}
             onChange={(e) => {
-              setHoleSize(e.target.value);
+              setHoleSize(parseInt(e.target.value));
             }}
             min={0}
             max={1000}
@@ -343,11 +344,12 @@ function Home() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                width: holeSize,
-                height: holeSize,
+
                 // background: "blue",
               }}
               animate={{
+                width: holeSize,
+                height: holeSize,
                 left: holePos.x - holeSize / 2,
                 top: holePos.y - holeSize / 2,
 
@@ -358,10 +360,10 @@ function Home() {
                 style={{
                   overflow: "hidden",
                   position: "relative",
-                  height: openHole === true ? holeSize : 0,
-                  width: openHole === true ? holeSize : 0,
                 }}
                 animate={{
+                  height: openHole === true ? holeSize : 0,
+                  width: openHole === true ? holeSize : 0,
                   borderRadius: holeSize / 2,
                 }}
               >
