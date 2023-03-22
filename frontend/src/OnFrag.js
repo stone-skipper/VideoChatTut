@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import Peer from "simple-peer";
 import io from "socket.io-client";
 import "./App.css";
+import Postit from "./Postit";
 import { motion } from "framer-motion/dist/framer-motion";
 
 // const socket = io.connect("http://localhost:5000");
@@ -39,12 +40,19 @@ function OnFrag() {
   const [holeSize, setHoleSize] = useState(800);
   const [opacity, setOpacity] = useState(0.3);
   const [blur, setBlur] = useState(30);
+  const postitArray = [
+    "midjourney",
+    "chatGPT",
+    "collaboration",
+    "Spotify",
+    "BBQ",
+  ];
 
   useEffect(() => {
     console.log(searchParams.get("socketid"));
 
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream) => {
         setStream(stream);
         // myVideo.current.srcObject = stream;
@@ -195,7 +203,7 @@ function OnFrag() {
                   type="range"
                   value={opacity}
                   onChange={(e) => {
-                    setOpacity(parseInt(e.target.value));
+                    setOpacity(e.target.value);
                   }}
                   min={0}
                   max={1}
@@ -252,7 +260,26 @@ function OnFrag() {
           <div>openhole : {openHole.toString()}</div>
         </div>
       </div>
-
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          display: "flex",
+          flexDirection: "row",
+          gap: 50,
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 8,
+          pointerEvents: "none",
+        }}
+      >
+        {postitArray.reverse().map((info, index) => {
+          return (
+            <Postit key={index} content={info} color={"white"} size={100} />
+          );
+        })}
+      </div>
       {/* <div>
         {stream && (
           <video
@@ -298,7 +325,7 @@ function OnFrag() {
               style={{
                 height: "100%",
                 width: "100%",
-                transform: "scaleX(-100%)",
+                // transform: "scaleX(-100%)",
                 objectFit: "cover",
               }}
             />
@@ -354,7 +381,7 @@ function OnFrag() {
                   style={{
                     height: "100vh",
                     width: "100vw",
-                    transform: "scaleX(-100%)",
+                    // transform: "scaleX(-100%)",
                     objectFit: "cover",
                     position: "absolute",
                     right: 0 - holePos.x + holeSize / 2,

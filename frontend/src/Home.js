@@ -3,7 +3,7 @@ import Button from "@material-ui/core/Button";
 import React, { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { motion } from "framer-motion/dist/framer-motion";
-
+import Postit from "./Postit";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Peer from "simple-peer";
 import io from "socket.io-client";
@@ -26,10 +26,12 @@ function Home() {
   const [userArray, setUserArray] = useState([]);
   const [feedPosition, setFeedPosition] = useState(1);
   const [autoFollow, setAutoFollow] = useState(true);
-  const postit = [
-    "blah blah blah",
-    "test test",
-    "this test is about blah blah ",
+  const postitArray = [
+    "midjourney",
+    "chatGPT",
+    "collaboration",
+    "Spotify",
+    "BBQ",
   ];
 
   var uArray = [];
@@ -61,7 +63,7 @@ function Home() {
 
   useEffect(() => {
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream) => {
         setStream(stream);
         myVideo.current.srcObject = stream;
@@ -106,7 +108,7 @@ function Home() {
       peer.signal(signal);
       peer.on("stream", (stream) => {
         userVideo.current.srcObject = stream;
-        userVideo2.current.srcObject = stream;
+        // userVideo2.current.srcObject = stream;
       });
     });
 
@@ -129,7 +131,7 @@ function Home() {
     });
     peer.on("stream", (stream) => {
       userVideo.current.srcObject = stream;
-      userVideo2.current.srcObject = stream;
+      // userVideo2.current.srcObject = stream;
     });
     peer.signal(callerSignal);
     connectionRef.current = peer;
@@ -244,7 +246,7 @@ function Home() {
             type="range"
             value={opacity}
             onChange={(e) => {
-              setOpacity(parseInt(e.target.value));
+              setOpacity(e.target.value);
             }}
             min={0}
             max={1}
@@ -286,7 +288,26 @@ function Home() {
         </div>
         openHole : {openHole.toString()}
       </div>
-
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          display: "flex",
+          flexDirection: "row",
+          gap: 50,
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 8,
+          pointerEvents: "none",
+        }}
+      >
+        {postitArray.map((info, index) => {
+          return (
+            <Postit key={index} content={info} color={"white"} size={100} />
+          );
+        })}
+      </div>
       {callAccepted && !callEnded ? (
         <div
           style={{
@@ -367,7 +388,7 @@ function Home() {
               >
                 <motion.video
                   playsInline
-                  ref={userVideo2}
+                  ref={userVideo}
                   autoPlay
                   muted
                   style={{
@@ -397,7 +418,7 @@ function Home() {
               height: "100%",
               background: "rgba(0,0,0,0.3)",
               position: "absolute",
-              zIndex: 5,
+              zIndex: 15,
               top: 0,
               left: 0,
               display: "flex",
