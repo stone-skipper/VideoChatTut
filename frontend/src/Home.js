@@ -26,6 +26,11 @@ function Home() {
   const [userArray, setUserArray] = useState([]);
   const [feedPosition, setFeedPosition] = useState(1);
   const [autoFollow, setAutoFollow] = useState(true);
+  const postit = [
+    "blah blah blah",
+    "test test",
+    "this test is about blah blah ",
+  ];
 
   var uArray = [];
   const myVideo = useRef();
@@ -33,16 +38,30 @@ function Home() {
   const userVideo2 = useRef();
   const connectionRef = useRef();
   const baseURL = window.location + "frag?socketid=";
+  const controlURL = window.location + "control?socketid=";
 
   const [openHole, setOpenHole] = useState(false);
   const [holePos, setHolePos] = useState({ x: 0, y: 0 });
   const [holeSize, setHoleSize] = useState(800);
   const [opacity, setOpacity] = useState(0.3);
   const [blur, setBlur] = useState(30);
+  const [mute, setMute] = useState(true);
+
+  const moveFeed = () => {
+    socket.emit("switchMode", {
+      autoFollow: autoFollow,
+      feedPosition: feedPosition,
+      blur: blur,
+      opacity: opacity,
+      holePos: holePos,
+      holeSize: holeSize,
+      openHole: openHole,
+    });
+  };
 
   useEffect(() => {
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
+      .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         setStream(stream);
         myVideo.current.srcObject = stream;
@@ -106,15 +125,7 @@ function Home() {
         signal: data,
         to: caller,
       });
-      socket.emit("switchMode", {
-        autoFollow: autoFollow,
-        feedPosition: feedPosition,
-        blur: blur,
-        opacity: opacity,
-        holePos: holePos,
-        holeSize: holeSize,
-        openHole: openHole,
-      });
+      moveFeed();
     });
     peer.on("stream", (stream) => {
       userVideo.current.srcObject = stream;
@@ -128,39 +139,6 @@ function Home() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
-
-  const moveFeed = () => {
-    socket.emit("switchMode", {
-      autoFollow: autoFollow,
-      feedPosition: feedPosition,
-      blur: blur,
-      opacity: opacity,
-      holePos: holePos,
-      holeSize: holeSize,
-      openHole: openHole,
-    });
-  };
-  function downHandler({ key }) {
-    console.log(key);
-    if (key === "1") {
-      setFeedPosition(1);
-    } else if (key === "2") {
-      setFeedPosition(2);
-    } else if (key === "3") {
-      setFeedPosition(3);
-    }
-  }
-
-  function upHandler({ key }) {}
-
-  useEffect(() => {
-    window.addEventListener("keydown", downHandler);
-    window.addEventListener("keyup", upHandler);
-    return () => {
-      window.removeEventListener("keydown", downHandler);
-      window.removeEventListener("keyup", upHandler);
-    };
-  }, []);
 
   useEffect(() => {
     moveFeed();
@@ -218,7 +196,7 @@ function Home() {
 
       <div
         style={{
-          width: "100%",
+          width: "fit-content",
           display: "flex",
           justifyContent: "center",
           position: "absolute",
@@ -246,13 +224,27 @@ function Home() {
         >
           <QRCodeSVG value={baseURL + me} size={50} />,
         </div>
+        {/* <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            window.open(controlURL + me);
+            navigator.clipboard.writeText(controlURL + me);
+          }}
+        >
+          <QRCodeSVG value={controlURL + me} size={50} />,
+        </div> */}
         <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
           opacity {opacity}
           <input
             type="range"
             value={opacity}
             onChange={(e) => {
-              setOpacity(e.target.value);
+              setOpacity(parseInt(e.target.value));
             }}
             min={0}
             max={1}
@@ -266,7 +258,7 @@ function Home() {
             type="range"
             value={blur}
             onChange={(e) => {
-              setBlur(e.target.value);
+              setBlur(parseInt(e.target.value));
             }}
             min={0}
             max={100}
@@ -278,11 +270,19 @@ function Home() {
             type="range"
             value={holeSize}
             onChange={(e) => {
-              setHoleSize(e.target.value);
+              setHoleSize(parseInt(e.target.value));
             }}
             min={0}
             max={1000}
           />
+        </div>
+        <div
+          onClick={() => {
+            setMute(!mute);
+          }}
+          style={{ background: "grey" }}
+        >
+          {mute === true ? "audio off" : "audio on"}
         </div>
         openHole : {openHole.toString()}
       </div>
@@ -312,6 +312,7 @@ function Home() {
               playsInline
               ref={userVideo}
               autoPlay
+              muted={mute}
               style={{
                 height: "100%",
                 width: "100%",
@@ -343,14 +344,13 @@ function Home() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                width: holeSize,
-                height: holeSize,
                 // background: "blue",
               }}
               animate={{
+                width: holeSize,
+                height: holeSize,
                 left: holePos.x - holeSize / 2,
                 top: holePos.y - holeSize / 2,
-
                 borderRadius: holeSize / 2,
               }}
             >
@@ -358,17 +358,18 @@ function Home() {
                 style={{
                   overflow: "hidden",
                   position: "relative",
-                  height: openHole === true ? holeSize : 0,
-                  width: openHole === true ? holeSize : 0,
                 }}
                 animate={{
                   borderRadius: holeSize / 2,
+                  height: openHole === true ? holeSize : 0,
+                  width: openHole === true ? holeSize : 0,
                 }}
               >
                 <motion.video
                   playsInline
                   ref={userVideo2}
                   autoPlay
+                  muted
                   style={{
                     height: "100vh",
                     width: "100vw",

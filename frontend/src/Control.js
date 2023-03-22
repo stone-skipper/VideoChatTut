@@ -11,7 +11,7 @@ import { motion } from "framer-motion/dist/framer-motion";
 // const socket = io.connect("http://localhost:5000");
 const socket = io.connect("https://ancient-bayou-47853.herokuapp.com/");
 
-function OnFrag() {
+function Control() {
   const [me, setMe] = useState("");
   const [stream, setStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);
@@ -25,7 +25,7 @@ function OnFrag() {
   const [feedPosition, setFeedPosition] = useState(null);
   const [name, setName] = useState("RP1");
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
-  const [mute, setMute] = useState(true);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const myVideo = useRef();
@@ -44,7 +44,7 @@ function OnFrag() {
     console.log(searchParams.get("socketid"));
 
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream) => {
         setStream(stream);
         // myVideo.current.srcObject = stream;
@@ -122,26 +122,26 @@ function OnFrag() {
     connectionRef.current = peer;
   };
 
-  const getFeedPosition = () => {
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-    });
-    peer.on("switchMode", (data) => {
-      setFeedPosition(data.feedPosition);
-      setAutoFollow(data.autoFollow);
-      setOpenHole(data.openHole);
-      setBlur(data.blur);
-      setOpacity(data.opacity);
-      setHolePos(data.holePose);
-      setHoleSize(data.holeSize);
-    });
-  };
-
   const leaveCall = () => {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
+
+  const moveFeed = () => {
+    socket.emit("switchMode", {
+      autoFollow: autoFollow,
+      feedPosition: feedPosition,
+      blur: blur,
+      opacity: opacity,
+      holePos: holePos,
+      holeSize: holeSize,
+      openHole: openHole,
+    });
+  };
+
+  useEffect(() => {
+    moveFeed();
+  }, [openHole, holePos, blur, opacity, holeSize]);
 
   return (
     <div
@@ -158,14 +158,14 @@ function OnFrag() {
     >
       <div
         style={{
-          width: "fit-content",
+          width: "100vw",
           height: "fit-content",
           position: "absolute",
           top: 0,
           zIndex: 5,
         }}
       >
-        <h1 style={{ textAlign: "center", color: "#fff" }}>Magic wall</h1>
+        <h1 style={{ textAlign: "center", color: "#fff" }}>Controller</h1>
 
         <div
           style={{
@@ -195,7 +195,7 @@ function OnFrag() {
                   type="range"
                   value={opacity}
                   onChange={(e) => {
-                    setOpacity(parseInt(e.target.value));
+                    setOpacity(e.target.value);
                   }}
                   min={0}
                   max={1}
@@ -209,7 +209,7 @@ function OnFrag() {
                   type="range"
                   value={blur}
                   onChange={(e) => {
-                    setBlur(parseInt(e.target.value));
+                    setBlur(e.target.value);
                   }}
                   min={0}
                   max={100}
@@ -221,19 +221,11 @@ function OnFrag() {
                   type="range"
                   value={holeSize}
                   onChange={(e) => {
-                    setHoleSize(parseInt(e.target.value));
+                    setHoleSize(e.target.value);
                   }}
                   min={0}
                   max={1000}
                 />
-              </div>
-              <div
-                onClick={() => {
-                  setMute(!mute);
-                }}
-                style={{ background: "grey" }}
-              >
-                {mute === true ? "audio off" : "audio on"}
               </div>
             </div>
           ) : (
@@ -252,122 +244,8 @@ function OnFrag() {
           <div>openhole : {openHole.toString()}</div>
         </div>
       </div>
-
-      {/* <div>
-        {stream && (
-          <video
-            playsInline
-            muted
-            ref={myVideo}
-            autoPlay
-            style={{
-              height: 300,
-              transform: "scaleX(-100%)",
-              position: "absolute",
-              bottom: 0,
-            }}
-          />
-        )}
-      </div> */}
-      {callAccepted && !callEnded ? (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            position: "relative",
-          }}
-        >
-          <motion.div
-            style={{
-              width: "100%",
-              height: "100%",
-              overflow: "hidden",
-              filter: "blur(" + blur + "px)",
-              opacity: opacity,
-              position: "absolute",
-              top: 0,
-              left: 0,
-            }}
-          >
-            {/* for blur */}
-            <video
-              playsInline
-              ref={userVideo}
-              autoPlay
-              muted={mute}
-              style={{
-                height: "100%",
-                width: "100%",
-                transform: "scaleX(-100%)",
-                objectFit: "cover",
-              }}
-            />
-          </motion.div>
-          <motion.div
-            style={{
-              width: "100%",
-              height: "100%",
-              overflow: "hidden",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              zIndex: 3,
-            }}
-            onClick={(e) => {
-              console.log(e.clientX, e.clientY);
-              setOpenHole(!openHole);
-              setHolePos({ x: e.clientX, y: e.clientY });
-            }}
-          >
-            <motion.div
-              style={{
-                overflow: "hidden",
-                position: "relative",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-              animate={{
-                width: holeSize,
-                height: holeSize,
-                borderRadius: holeSize / 2,
-                left: screenSize.width - (holePos.x + holeSize / 2),
-                top: holePos.y - holeSize / 2,
-              }}
-            >
-              <motion.div
-                style={{
-                  overflow: "hidden",
-                  position: "relative",
-                }}
-                animate={{
-                  height: openHole === true ? holeSize : 0,
-                  width: openHole === true ? holeSize : 0,
-                  borderRadius: holeSize / 2,
-                }}
-              >
-                <video
-                  playsInline
-                  ref={userVideo2}
-                  autoPlay
-                  muted
-                  style={{
-                    height: "100vh",
-                    width: "100vw",
-                    transform: "scaleX(-100%)",
-                    objectFit: "cover",
-                    position: "absolute",
-                    right: 0 - holePos.x + holeSize / 2,
-                    top: 0 - holePos.y + holeSize / 2,
-                  }}
-                />
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </div>
-      ) : null}
     </div>
   );
 }
 
-export default OnFrag;
+export default Control;
