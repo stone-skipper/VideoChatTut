@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import Peer from "simple-peer";
 import io from "socket.io-client";
 import "./App.css";
-import Postit from "./Postit";
+import Postit from "./component/Postit";
 import { motion } from "framer-motion/dist/framer-motion";
 
 // const socket = io.connect("http://localhost:5000");
@@ -19,14 +19,9 @@ function OnFrag() {
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
-  const [idToCall, setIdToCall] = useState("");
   const [callEnded, setCallEnded] = useState(false);
-  const [autoFollow, setAutoFollow] = useState(true);
-  const [deviceId, setDeviceId] = useState(0);
-  const [feedPosition, setFeedPosition] = useState(null);
-  const [name, setName] = useState("RP1");
+  const [name, setName] = useState("Magic Wall");
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
-  const [mute, setMute] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const myVideo = useRef();
@@ -67,12 +62,9 @@ function OnFrag() {
       setCaller(data.from);
       setName(data.name);
       setCallerSignal(data.signal);
-      // setFeedPosition(data.feedPosition);
     });
 
     socket.on("switchMode", (data) => {
-      setFeedPosition(data.feedPosition);
-      setAutoFollow(data.autoFollow);
       setOpenHole(data.openHole);
       setBlur(data.blur);
       setOpacity(data.opacity);
@@ -96,7 +88,7 @@ function OnFrag() {
         userToCall: id,
         signalData: data,
         from: me,
-        name: deviceId,
+        name: name,
       });
     });
     peer.on("stream", (stream) => {
@@ -109,41 +101,6 @@ function OnFrag() {
     });
 
     connectionRef.current = peer;
-  };
-
-  const answerCall = () => {
-    setCallAccepted(true);
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream: stream,
-    });
-    peer.on("signal", (data) => {
-      socket.emit("answerCall", { signal: data, to: caller });
-    });
-    peer.on("stream", (stream) => {
-      userVideo.current.srcObject = stream;
-      userVideo2.current.srcObject = stream;
-    });
-
-    peer.signal(callerSignal);
-    connectionRef.current = peer;
-  };
-
-  const getFeedPosition = () => {
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-    });
-    peer.on("switchMode", (data) => {
-      setFeedPosition(data.feedPosition);
-      setAutoFollow(data.autoFollow);
-      setOpenHole(data.openHole);
-      setBlur(data.blur);
-      setOpacity(data.opacity);
-      setHolePos(data.holePose);
-      setHoleSize(data.holeSize);
-    });
   };
 
   const leaveCall = () => {
@@ -235,20 +192,11 @@ function OnFrag() {
                   max={1000}
                 />
               </div>
-              <div
-                onClick={() => {
-                  setMute(!mute);
-                }}
-                style={{ background: "grey" }}
-              >
-                {mute === true ? "audio off" : "audio on"}
-              </div>
             </div>
           ) : (
             <IconButton
               color="primary"
               aria-label="call"
-              // onClick={() => callUser(idToCall)}
               onClick={() => {
                 callUser(searchParams.get("socketid"));
               }}
@@ -280,22 +228,7 @@ function OnFrag() {
           );
         })}
       </div>
-      {/* <div>
-        {stream && (
-          <video
-            playsInline
-            muted
-            ref={myVideo}
-            autoPlay
-            style={{
-              height: 300,
-              transform: "scaleX(-100%)",
-              position: "absolute",
-              bottom: 0,
-            }}
-          />
-        )}
-      </div> */}
+
       {callAccepted && !callEnded ? (
         <div
           style={{
@@ -321,7 +254,7 @@ function OnFrag() {
               playsInline
               ref={userVideo}
               autoPlay
-              muted={mute}
+              muted
               style={{
                 height: "100%",
                 width: "100%",

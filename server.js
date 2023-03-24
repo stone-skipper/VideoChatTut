@@ -30,8 +30,6 @@ io.on("connection", (socket) => {
 
   socket.on("switchMode", (data) => {
     socket.broadcast.emit("switchMode", {
-      autoFollow: data.autoFollow,
-      feedPosition: data.feedPosition,
       blur: data.blur,
       opacity: data.opacity,
       openHole: data.openHole,

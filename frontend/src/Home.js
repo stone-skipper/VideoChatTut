@@ -3,12 +3,10 @@ import Button from "@material-ui/core/Button";
 import React, { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { motion } from "framer-motion/dist/framer-motion";
-import Postit from "./Postit";
-import { CopyToClipboard } from "react-copy-to-clipboard";
+import Postit from "./component/Postit";
 import Peer from "simple-peer";
 import io from "socket.io-client";
 import "./App.css";
-import { Link } from "react-router-dom";
 
 // const socket = io.connect("http://localhost:5000");
 const socket = io.connect("https://ancient-bayou-47853.herokuapp.com/");
@@ -20,12 +18,9 @@ function Home() {
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
-  const [idToCall, setIdToCall] = useState("");
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("Remote Participant");
-  const [userArray, setUserArray] = useState([]);
-  const [feedPosition, setFeedPosition] = useState(1);
-  const [autoFollow, setAutoFollow] = useState(true);
+
   const postitArray = [
     "midjourney",
     "chatGPT",
@@ -34,25 +29,20 @@ function Home() {
     "BBQ",
   ];
 
-  var uArray = [];
   const myVideo = useRef();
   const userVideo = useRef();
   const userVideo2 = useRef();
   const connectionRef = useRef();
   const baseURL = window.location + "frag?socketid=";
-  const controlURL = window.location + "control?socketid=";
 
   const [openHole, setOpenHole] = useState(false);
   const [holePos, setHolePos] = useState({ x: 0, y: 0 });
   const [holeSize, setHoleSize] = useState(800);
   const [opacity, setOpacity] = useState(0.3);
   const [blur, setBlur] = useState(30);
-  const [mute, setMute] = useState(true);
 
   const moveFeed = () => {
     socket.emit("switchMode", {
-      autoFollow: autoFollow,
-      feedPosition: feedPosition,
       blur: blur,
       opacity: opacity,
       holePos: holePos,
@@ -66,6 +56,7 @@ function Home() {
       .getUserMedia({ video: true, audio: false })
       .then((stream) => {
         setStream(stream);
+        console.log(stream);
         myVideo.current.srcObject = stream;
       });
 
@@ -78,8 +69,6 @@ function Home() {
       setCaller(data.from);
       setName(data.name);
       setCallerSignal(data.signal);
-      uArray.push({ name: data.name, autoFollow: data.autoFollow });
-      setUserArray(uArray);
     });
 
     socket.on("switchMode", (data) => {
@@ -108,7 +97,7 @@ function Home() {
       peer.signal(signal);
       peer.on("stream", (stream) => {
         userVideo.current.srcObject = stream;
-        // userVideo2.current.srcObject = stream;
+        userVideo2.current.srcObject = stream;
       });
     });
 
@@ -131,7 +120,7 @@ function Home() {
     });
     peer.on("stream", (stream) => {
       userVideo.current.srcObject = stream;
-      // userVideo2.current.srcObject = stream;
+      userVideo2.current.srcObject = stream;
     });
     peer.signal(callerSignal);
     connectionRef.current = peer;
@@ -226,20 +215,6 @@ function Home() {
         >
           <QRCodeSVG value={baseURL + me} size={50} />,
         </div>
-        {/* <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            window.open(controlURL + me);
-            navigator.clipboard.writeText(controlURL + me);
-          }}
-        >
-          <QRCodeSVG value={controlURL + me} size={50} />,
-        </div> */}
         <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
           opacity {opacity}
           <input
@@ -277,14 +252,6 @@ function Home() {
             min={0}
             max={1000}
           />
-        </div>
-        <div
-          onClick={() => {
-            setMute(!mute);
-          }}
-          style={{ background: "grey" }}
-        >
-          {mute === true ? "audio off" : "audio on"}
         </div>
         openHole : {openHole.toString()}
       </div>
@@ -333,7 +300,7 @@ function Home() {
               playsInline
               ref={userVideo}
               autoPlay
-              muted={mute}
+              muted
               style={{
                 height: "100%",
                 width: "100%",
@@ -388,7 +355,7 @@ function Home() {
               >
                 <motion.video
                   playsInline
-                  ref={userVideo}
+                  ref={userVideo2}
                   autoPlay
                   muted
                   style={{
