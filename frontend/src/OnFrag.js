@@ -35,19 +35,26 @@ function OnFrag() {
   const [holeSize, setHoleSize] = useState(800);
   const [opacity, setOpacity] = useState(0.3);
   const [blur, setBlur] = useState(30);
+  const [selectedPostit, setSelectedPostit] = useState([]);
+
   const postitArray = [
-    "midjourney",
-    "chatGPT",
-    "collaboration",
-    "Spotify",
-    "BBQ",
+    "Social media can be addictive and lead to decreased productivity and time wasting.",
+    "Cyberbullying and harassment are prevalent on social media platforms and can have serious mental health consequences.",
+    "Social media can create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
+    "The spread of fake news and misinformation can have harmful impacts on public opinion and decision-making.",
+    "Social media can be a breeding ground for hate speech and propaganda, fostering division and conflict.",
+    "Social media provides a platform for individuals and groups to connect and share ideas, fostering a sense of community and belonging.",
+    "Social media can be a powerful tool for social and political activism, allowing for the mobilization of large groups of people for a common cause.",
+    "Social media can facilitate the spread of important information and news in real-time, allowing for greater awareness and understanding of current events.",
+    "Social media can be a valuable resource for businesses and entrepreneurs, allowing for targeted advertising and customer engagement.",
+    "Social media can provide a platform for marginalized voices and underrepresented communities to be heard and share their experiences.",
   ];
 
   useEffect(() => {
     console.log(searchParams.get("socketid"));
 
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
+      .getUserMedia({ audio: true, video: true })
       .then((stream) => {
         setStream(stream);
         // myVideo.current.srcObject = stream;
@@ -70,6 +77,7 @@ function OnFrag() {
       setOpacity(data.opacity);
       setHolePos(data.holePos);
       setHoleSize(data.holeSize);
+      setSelectedPostit(data.postit);
 
       console.log("switching mode!");
     });
@@ -128,6 +136,7 @@ function OnFrag() {
           position: "absolute",
           top: 0,
           zIndex: 5,
+          display: callAccepted && !callEnded ? "none" : "block",
         }}
       >
         <h1 style={{ textAlign: "center", color: "#fff" }}>Magic wall</h1>
@@ -213,22 +222,78 @@ function OnFrag() {
           width: "100%",
           height: "100%",
           position: "absolute",
-          display: "flex",
-          flexDirection: "row",
-          gap: 50,
-          alignItems: "center",
-          justifyContent: "center",
           zIndex: 8,
           pointerEvents: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {postitArray.reverse().map((info, index) => {
-          return (
-            <Postit key={index} content={info} color={"white"} size={100} />
-          );
-        })}
+        <div
+          style={{
+            width: "60%",
+            height: "fit-content",
+            position: "absolute",
+            display: "flex",
+            flexDirection: "row",
+            gap: 50,
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 8,
+            pointerEvents: "none",
+            flexWrap: "wrap",
+          }}
+        >
+          {postitArray
+            .slice(0, 5)
+            .reverse()
+            .map((info, index) => {
+              return (
+                <Postit
+                  key={index}
+                  content={info}
+                  color={"white"}
+                  size={100}
+                  selected={selectedPostit.includes(index)}
+                  onClick={() => {
+                    console.log("!");
+                    if (selectedPostit.includes(index) === false) {
+                      setSelectedPostit([...selectedPostit, index]);
+                    } else {
+                      setSelectedPostit(
+                        selectedPostit.filter((item) => item !== index)
+                      );
+                    }
+                  }}
+                />
+              );
+            })}
+          {postitArray
+            .slice(5, 10)
+            .reverse()
+            .map((info, index) => {
+              return (
+                <Postit
+                  key={index}
+                  content={info}
+                  color={"white"}
+                  size={100}
+                  selected={selectedPostit.includes(index)}
+                  onClick={() => {
+                    console.log("!");
+                    if (selectedPostit.includes(index) === false) {
+                      setSelectedPostit([...selectedPostit, index]);
+                    } else {
+                      setSelectedPostit(
+                        selectedPostit.filter((item) => item !== index)
+                      );
+                    }
+                  }}
+                />
+              );
+            })}
+        </div>
       </div>
-
       {callAccepted && !callEnded ? (
         <div
           style={{
@@ -254,7 +319,7 @@ function OnFrag() {
               playsInline
               ref={userVideo}
               autoPlay
-              muted
+              // muted
               style={{
                 height: "100%",
                 width: "100%",

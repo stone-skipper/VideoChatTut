@@ -21,12 +21,19 @@ function Home() {
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("Remote Participant");
 
+  const [mode, setMode] = useState("sil"); //sil <> win <> full
+
   const postitArray = [
-    "midjourney",
-    "chatGPT",
-    "collaboration",
-    "Spotify",
-    "BBQ",
+    "Social media can be addictive and lead to decreased productivity and time wasting.",
+    "Cyberbullying and harassment are prevalent on social media platforms and can have serious mental health consequences.",
+    "Social media can create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
+    "The spread of fake news and misinformation can have harmful impacts on public opinion and decision-making.",
+    "Social media can be a breeding ground for hate speech and propaganda, fostering division and conflict.",
+    "Social media provides a platform for individuals and groups to connect and share ideas, fostering a sense of community and belonging.",
+    "Social media can be a powerful tool for social and political activism, allowing for the mobilization of large groups of people for a common cause.",
+    "Social media can facilitate the spread of important information and news in real-time, allowing for greater awareness and understanding of current events.",
+    "Social media can be a valuable resource for businesses and entrepreneurs, allowing for targeted advertising and customer engagement.",
+    "Social media can provide a platform for marginalized voices and underrepresented communities to be heard and share their experiences.",
   ];
 
   const myVideo = useRef();
@@ -40,6 +47,11 @@ function Home() {
   const [holeSize, setHoleSize] = useState(800);
   const [opacity, setOpacity] = useState(0.3);
   const [blur, setBlur] = useState(30);
+  const [selectedPostit, setSelectedPostit] = useState([]);
+
+  useEffect(() => {
+    console.log(selectedPostit);
+  }, [selectedPostit]);
 
   const moveFeed = () => {
     socket.emit("switchMode", {
@@ -48,12 +60,13 @@ function Home() {
       holePos: holePos,
       holeSize: holeSize,
       openHole: openHole,
+      postit: selectedPostit,
     });
   };
 
   useEffect(() => {
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
+      .getUserMedia({ audio: true, video: true })
       .then((stream) => {
         setStream(stream);
         console.log(stream);
@@ -73,7 +86,7 @@ function Home() {
 
     socket.on("switchMode", (data) => {
       moveFeed();
-      console.log("switching mode", data);
+      // console.log("switching mode", data);
     });
   }, []);
 
@@ -132,8 +145,45 @@ function Home() {
   };
 
   useEffect(() => {
+    setHolePos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+  }, []);
+
+  useEffect(() => {
     moveFeed();
-  }, [openHole, holePos, blur, opacity, holeSize]);
+  }, [openHole, holePos, blur, opacity, holeSize, selectedPostit]);
+
+  useEffect(() => {
+    if (mode === "sil") {
+      setOpenHole(false);
+      setBlur(30);
+      setOpacity(0.3);
+    } else if (mode === "win") {
+      setOpenHole(true);
+      setHoleSize(600);
+    } else if (mode === "full") {
+      setOpenHole(true);
+      setHoleSize(3000);
+    }
+  }, [mode]);
+
+  const Btn = ({ title, active }) => {
+    return (
+      <div
+        style={{
+          padding: 10,
+          width: "fit-content",
+          height: "fit-content",
+          color: "white",
+          background: active === title ? "blue" : "grey",
+        }}
+        onClick={() => {
+          setMode(title);
+        }}
+      >
+        {title}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -254,27 +304,63 @@ function Home() {
           />
         </div>
         openHole : {openHole.toString()}
+        <div style={{ display: "flex" }}>
+          <Btn title="sil" active={mode} />
+          <Btn title="win" active={mode} />
+          <Btn title="full" active={mode} />
+        </div>
       </div>
       <div
         style={{
           width: "100%",
           height: "100%",
           position: "absolute",
-          display: "flex",
-          flexDirection: "row",
-          gap: 50,
-          alignItems: "center",
-          justifyContent: "center",
           zIndex: 8,
           pointerEvents: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {postitArray.map((info, index) => {
-          return (
-            <Postit key={index} content={info} color={"white"} size={100} />
-          );
-        })}
+        <div
+          style={{
+            width: "60%",
+            height: "fit-content",
+            position: "absolute",
+            display: "flex",
+            flexDirection: "row",
+            gap: 50,
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 8,
+            pointerEvents: "none",
+            flexWrap: "wrap",
+          }}
+        >
+          {postitArray.map((info, index) => {
+            return (
+              <Postit
+                key={index}
+                content={info}
+                color={"white"}
+                size={100}
+                selected={selectedPostit.includes(index)}
+                onClick={() => {
+                  console.log("!");
+                  if (selectedPostit.includes(index) === false) {
+                    setSelectedPostit([...selectedPostit, index]);
+                  } else {
+                    setSelectedPostit(
+                      selectedPostit.filter((item) => item !== index)
+                    );
+                  }
+                }}
+              />
+            );
+          })}
+        </div>
       </div>
+
       {callAccepted && !callEnded ? (
         <div
           style={{
@@ -300,7 +386,7 @@ function Home() {
               playsInline
               ref={userVideo}
               autoPlay
-              muted
+              // muted
               style={{
                 height: "100%",
                 width: "100%",
