@@ -2,7 +2,7 @@ import { motion } from "framer-motion/dist/framer-motion";
 import { useState } from "react";
 
 function Postit({ content, color, size, onClick, selected = false }) {
-  const [select, setSelect] = useState(false);
+  // const [select, setSelect] = useState(false);
   return (
     <motion.div
       // drag={true}
@@ -17,6 +17,7 @@ function Postit({ content, color, size, onClick, selected = false }) {
         pointerEvents: "auto",
         fontSize: 10,
         padding: 5,
+        direction: "ltr",
       }}
       animate={{
         border: selected === false ? "2px solid " + color : "2px solid blue",

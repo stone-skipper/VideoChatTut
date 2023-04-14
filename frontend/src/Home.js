@@ -24,16 +24,16 @@ function Home() {
   const [mode, setMode] = useState("sil"); //sil <> win <> full
 
   const postitArray = [
-    "Social media can be addictive and lead to decreased productivity and time wasting.",
-    "Cyberbullying and harassment are prevalent on social media platforms and can have serious mental health consequences.",
-    "Social media can create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
-    "The spread of fake news and misinformation can have harmful impacts on public opinion and decision-making.",
-    "Social media can be a breeding ground for hate speech and propaganda, fostering division and conflict.",
-    "Social media provides a platform for individuals and groups to connect and share ideas, fostering a sense of community and belonging.",
-    "Social media can be a powerful tool for social and political activism, allowing for the mobilization of large groups of people for a common cause.",
-    "Social media can facilitate the spread of important information and news in real-time, allowing for greater awareness and understanding of current events.",
-    "Social media can be a valuable resource for businesses and entrepreneurs, allowing for targeted advertising and customer engagement.",
-    "Social media can provide a platform for marginalized voices and underrepresented communities to be heard and share their experiences.",
+    "Addictive and lead to decreased productivity and time wasting.",
+    "Prevalent cyberbullying and harrassment can cause serious mental health consequences. ",
+    "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
+    "The spread of fake news, misinformation, and its impact on decision-making.",
+    "Hate speech and propaganda, fostering division and conflict.",
+    "A way to stay connected to friends, family, and community.",
+    "A place to connect with different people in the world and freely share your opinions",
+    "Increase your visibility and build your audience for bigger opportunities in a career/business",
+    "A great source of knowledge and information to get inspired",
+    "Provide a platform for underrepresented communities to be heard and share their experiences.",
   ];
 
   const myVideo = useRef();
@@ -44,14 +44,10 @@ function Home() {
 
   const [openHole, setOpenHole] = useState(false);
   const [holePos, setHolePos] = useState({ x: 0, y: 0 });
-  const [holeSize, setHoleSize] = useState(800);
+  const [holeSize, setHoleSize] = useState(400);
   const [opacity, setOpacity] = useState(0.3);
-  const [blur, setBlur] = useState(30);
+  const [blur, setBlur] = useState(25);
   const [selectedPostit, setSelectedPostit] = useState([]);
-
-  useEffect(() => {
-    console.log(selectedPostit);
-  }, [selectedPostit]);
 
   const moveFeed = () => {
     socket.emit("switchMode", {
@@ -62,6 +58,7 @@ function Home() {
       openHole: openHole,
       postit: selectedPostit,
     });
+    console.log("switching mode");
   };
 
   useEffect(() => {
@@ -85,8 +82,14 @@ function Home() {
     });
 
     socket.on("switchMode", (data) => {
-      moveFeed();
-      // console.log("switching mode", data);
+      // moveFeed();
+      setOpenHole(data.openHole);
+      setBlur(data.blur);
+      setOpacity(data.opacity);
+      setHolePos(data.holePos);
+      setHoleSize(data.holeSize);
+      setSelectedPostit(data.postit);
+      console.log("listener");
     });
   }, []);
 
@@ -129,7 +132,7 @@ function Home() {
         signal: data,
         to: caller,
       });
-      moveFeed();
+      // moveFeed();
     });
     peer.on("stream", (stream) => {
       userVideo.current.srcObject = stream;
@@ -150,16 +153,17 @@ function Home() {
 
   useEffect(() => {
     moveFeed();
+    console.log(selectedPostit);
   }, [openHole, holePos, blur, opacity, holeSize, selectedPostit]);
 
   useEffect(() => {
     if (mode === "sil") {
       setOpenHole(false);
-      setBlur(30);
+      setBlur(25);
       setOpacity(0.3);
     } else if (mode === "win") {
       setOpenHole(true);
-      setHoleSize(600);
+      setHoleSize(400);
     } else if (mode === "full") {
       setOpenHole(true);
       setHoleSize(3000);
@@ -247,10 +251,10 @@ function Home() {
         }}
       >
         {/* header */}
-        <h1 style={{ textAlign: "center", color: "#fff" }}>
+        {/* <h1 style={{ textAlign: "center", color: "#fff" }}>
           Magic wall (moderator)
-        </h1>
-        <p style={{ textAlign: "center", color: "#fff" }}> socket id :{me}</p>
+        </h1> */}
+        <p style={{ textAlign: "center" }}> socket id :{me}</p>
         <div
           style={{
             display: "flex",
@@ -308,6 +312,7 @@ function Home() {
           <Btn title="sil" active={mode} />
           <Btn title="win" active={mode} />
           <Btn title="full" active={mode} />
+          <Btn title="noCanv" active={mode} />
         </div>
       </div>
       <div
@@ -327,7 +332,7 @@ function Home() {
             width: "60%",
             height: "fit-content",
             position: "absolute",
-            display: "flex",
+            display: mode === "noCanv" ? "none" : "flex",
             flexDirection: "row",
             gap: 50,
             alignItems: "center",

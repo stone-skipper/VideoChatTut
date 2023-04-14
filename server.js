@@ -37,7 +37,7 @@ io.on("connection", (socket) => {
       holePos: data.holePos,
       postit: data.postit,
     });
-    console.log("switchMode", data.openHole);
+    console.log("switchMode", data);
   });
 
   socket.on("answerCall", (data) => {

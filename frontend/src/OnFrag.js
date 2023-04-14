@@ -32,22 +32,23 @@ function OnFrag() {
 
   const [openHole, setOpenHole] = useState(false);
   const [holePos, setHolePos] = useState({ x: 0, y: 0 });
-  const [holeSize, setHoleSize] = useState(800);
+  const [holeSize, setHoleSize] = useState(400);
   const [opacity, setOpacity] = useState(0.3);
-  const [blur, setBlur] = useState(30);
+  const [blur, setBlur] = useState(25);
   const [selectedPostit, setSelectedPostit] = useState([]);
+  const [toggleCanv, setToggleCanv] = useState(true);
 
   const postitArray = [
-    "Social media can be addictive and lead to decreased productivity and time wasting.",
-    "Cyberbullying and harassment are prevalent on social media platforms and can have serious mental health consequences.",
-    "Social media can create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
-    "The spread of fake news and misinformation can have harmful impacts on public opinion and decision-making.",
-    "Social media can be a breeding ground for hate speech and propaganda, fostering division and conflict.",
-    "Social media provides a platform for individuals and groups to connect and share ideas, fostering a sense of community and belonging.",
-    "Social media can be a powerful tool for social and political activism, allowing for the mobilization of large groups of people for a common cause.",
-    "Social media can facilitate the spread of important information and news in real-time, allowing for greater awareness and understanding of current events.",
-    "Social media can be a valuable resource for businesses and entrepreneurs, allowing for targeted advertising and customer engagement.",
-    "Social media can provide a platform for marginalized voices and underrepresented communities to be heard and share their experiences.",
+    "Addictive and lead to decreased productivity and time wasting.",
+    "Prevalent cyberbullying and harrassment can cause serious mental health consequences. ",
+    "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
+    "The spread of fake news, misinformation, and its impact on decision-making.",
+    "Hate speech and propaganda, fostering division and conflict.",
+    "A way to stay connected to friends, family, and community.",
+    "A place to connect with different people in the world and freely share your opinions",
+    "Increase your visibility and build your audience for bigger opportunities in a career/business",
+    "A great source of knowledge and information to get inspired",
+    "Provide a platform for underrepresented communities to be heard and share their experiences.",
   ];
 
   useEffect(() => {
@@ -78,12 +79,21 @@ function OnFrag() {
       setHolePos(data.holePos);
       setHoleSize(data.holeSize);
       setSelectedPostit(data.postit);
-
-      console.log("switching mode!");
     });
 
     setScreenSize({ width: window.innerWidth, height: window.innerHeight });
   }, []);
+
+  const moveFeed = () => {
+    socket.emit("switchMode", {
+      blur: blur,
+      opacity: opacity,
+      holePos: holePos,
+      holeSize: holeSize,
+      openHole: openHole,
+      postit: selectedPostit,
+    });
+  };
 
   const callUser = (id) => {
     const peer = new Peer({
@@ -98,6 +108,7 @@ function OnFrag() {
         from: me,
         name: name,
       });
+      moveFeed();
     });
     peer.on("stream", (stream) => {
       userVideo.current.srcObject = stream;
@@ -106,6 +117,7 @@ function OnFrag() {
     socket.on("callAccepted", (signal) => {
       setCallAccepted(true);
       peer.signal(signal);
+      // moveFeed();
     });
 
     connectionRef.current = peer;
@@ -115,6 +127,10 @@ function OnFrag() {
     setCallEnded(true);
     connectionRef.current.destroy();
   };
+
+  // useEffect(() => {
+  //   moveFeed();
+  // }, [selectedPostit]);
 
   return (
     <div
@@ -139,7 +155,11 @@ function OnFrag() {
           display: callAccepted && !callEnded ? "none" : "block",
         }}
       >
-        <h1 style={{ textAlign: "center", color: "#fff" }}>Magic wall</h1>
+        {/* <h1 style={{ textAlign: "center" }}>Magic wall</h1> */}
+        <p style={{ textAlign: "center" }}>
+          {" "}
+          call to : {searchParams.get("socketid")}
+        </p>
 
         <div
           style={{
@@ -231,10 +251,10 @@ function OnFrag() {
       >
         <div
           style={{
-            width: "60%",
+            width: "50%",
             height: "fit-content",
             position: "absolute",
-            display: "flex",
+            display: toggleCanv === true ? "flex" : "none",
             flexDirection: "row",
             gap: 50,
             alignItems: "center",
@@ -242,56 +262,51 @@ function OnFrag() {
             zIndex: 8,
             pointerEvents: "none",
             flexWrap: "wrap",
+            direction: "rtl",
           }}
         >
-          {postitArray
-            .slice(0, 5)
-            .reverse()
-            .map((info, index) => {
-              return (
-                <Postit
-                  key={index}
-                  content={info}
-                  color={"white"}
-                  size={100}
-                  selected={selectedPostit.includes(index)}
-                  onClick={() => {
-                    console.log("!");
-                    if (selectedPostit.includes(index) === false) {
-                      setSelectedPostit([...selectedPostit, index]);
-                    } else {
-                      setSelectedPostit(
-                        selectedPostit.filter((item) => item !== index)
-                      );
-                    }
-                  }}
-                />
-              );
-            })}
-          {postitArray
-            .slice(5, 10)
-            .reverse()
-            .map((info, index) => {
-              return (
-                <Postit
-                  key={index}
-                  content={info}
-                  color={"white"}
-                  size={100}
-                  selected={selectedPostit.includes(index)}
-                  onClick={() => {
-                    console.log("!");
-                    if (selectedPostit.includes(index) === false) {
-                      setSelectedPostit([...selectedPostit, index]);
-                    } else {
-                      setSelectedPostit(
-                        selectedPostit.filter((item) => item !== index)
-                      );
-                    }
-                  }}
-                />
-              );
-            })}
+          {postitArray.slice(0, 5).map((info, index) => {
+            return (
+              <Postit
+                key={index}
+                content={info}
+                color={"white"}
+                size={100}
+                selected={selectedPostit.includes(index)}
+                onClick={() => {
+                  console.log("!");
+                  if (selectedPostit.includes(index) === false) {
+                    setSelectedPostit([...selectedPostit, index]);
+                  } else {
+                    setSelectedPostit(
+                      selectedPostit.filter((item) => item !== index)
+                    );
+                  }
+                }}
+              />
+            );
+          })}
+          {postitArray.slice(5, 10).map((info, index) => {
+            return (
+              <Postit
+                key={index}
+                content={info}
+                color={"white"}
+                size={100}
+                selected={selectedPostit.includes(index + 5)}
+                onClick={() => {
+                  console.log("!");
+                  if (selectedPostit.includes(index + 5) === false) {
+                    setSelectedPostit([...selectedPostit, index + 5]);
+                  } else {
+                    setSelectedPostit(
+                      selectedPostit.filter((item) => item !== index + 5)
+                    );
+                  }
+                }}
+              />
+            );
+          })}
         </div>
       </div>
       {callAccepted && !callEnded ? (
@@ -338,10 +353,11 @@ function OnFrag() {
               left: 0,
               zIndex: 3,
             }}
-            onClick={(e) => {
+            onClick={async (e) => {
               console.log(e.clientX, e.clientY);
               setOpenHole(!openHole);
-              setHolePos({ x: e.clientX, y: e.clientY });
+              await setHolePos({ x: e.clientX, y: e.clientY });
+              moveFeed();
             }}
           >
             <motion.div
@@ -356,7 +372,8 @@ function OnFrag() {
                 width: holeSize,
                 height: holeSize,
                 borderRadius: holeSize / 2,
-                left: screenSize.width - (holePos.x + holeSize / 2),
+                // left: screenSize.width - (holePos.x + holeSize / 2),
+                left: holePos.x - holeSize / 2,
                 top: holePos.y - holeSize / 2,
               }}
             >
