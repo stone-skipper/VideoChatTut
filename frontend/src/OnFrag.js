@@ -41,14 +41,22 @@ function OnFrag() {
   const postitArray = [
     "Addictive and lead to decreased productivity and time wasting.",
     "Prevalent cyberbullying and harrassment can cause serious mental health consequences. ",
-    "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
+    // "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
     "The spread of fake news, misinformation, and its impact on decision-making.",
     "Hate speech and propaganda, fostering division and conflict.",
     "A way to stay connected to friends, family, and community.",
     "A place to connect with different people in the world and freely share your opinions",
-    "Increase your visibility and build your audience for bigger opportunities in a career/business",
+    // "Increase your visibility and build your audience for bigger opportunities in a career/business",
     "A great source of knowledge and information to get inspired",
     "Provide a platform for underrepresented communities to be heard and share their experiences.",
+  ];
+  const imageArray = [
+    "Frame1077.png",
+    "Frame1078.png",
+    "Frame1079.png",
+    "Option2.png",
+    "Frame1080.png",
+    "Frame1081.png",
   ];
 
   useEffect(() => {
@@ -304,6 +312,20 @@ function OnFrag() {
                     );
                   }
                 }}
+              />
+            );
+          })}
+          {imageArray.reverse().map((info, index) => {
+            return (
+              <motion.img
+                drag={true}
+                dragMomentum={false}
+                key={index}
+                src={"img/" + info}
+                alt={info}
+                width={300}
+                height={150}
+                style={{ objectFit: "contain", pointerEvents: "auto" }}
               />
             );
           })}
