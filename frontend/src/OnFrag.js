@@ -38,27 +38,37 @@ function OnFrag() {
   const [selectedPostit, setSelectedPostit] = useState([]);
   const [toggleCanv, setToggleCanv] = useState(true);
 
+  // const postitArray = [
+  //   "Addictive and lead to decreased productivity and time wasting.",
+  //   "Prevalent cyberbullying and harrassment can cause serious mental health consequences. ",
+  //   // "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
+  //   "The spread of fake news, misinformation, and its impact on decision-making.",
+  //   "Hate speech and propaganda, fostering division and conflict.",
+  //   "A way to stay connected to friends, family, and community.",
+  //   "A place to connect with different people in the world and freely share your opinions",
+  //   // "Increase your visibility and build your audience for bigger opportunities in a career/business",
+  //   "A great source of knowledge and information to get inspired",
+  //   "Provide a platform for underrepresented communities to be heard and share their experiences.",
+  // ];
+
   const postitArray = [
-    "Addictive and lead to decreased productivity and time wasting.",
-    "Prevalent cyberbullying and harrassment can cause serious mental health consequences. ",
-    // "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
-    "The spread of fake news, misinformation, and its impact on decision-making.",
-    "Hate speech and propaganda, fostering division and conflict.",
-    "A way to stay connected to friends, family, and community.",
-    "A place to connect with different people in the world and freely share your opinions",
-    // "Increase your visibility and build your audience for bigger opportunities in a career/business",
-    "A great source of knowledge and information to get inspired",
-    "Provide a platform for underrepresented communities to be heard and share their experiences.",
+    "gaming controller",
+    "user testings by regions",
+    "customization",
+    "future of connection",
   ];
+
   const imageArray = [
     "Frame1077.png",
     "Frame1078.png",
     "Frame1079.png",
-    "Option2.png",
-    "Frame1080.png",
-    "Frame1081.png",
+    // "Option2.png",
+    // "Cursor-Rob.png",
+    // "Cursor-Sam.png",
+    "Frame13464.png",
+    // "Frame1080.png",
+    // "Frame1081.png",
   ];
-
   useEffect(() => {
     console.log(searchParams.get("socketid"));
 
@@ -245,17 +255,20 @@ function OnFrag() {
           <div>openhole : {openHole.toString()}</div>
         </div>
       </div>
-      <div
+      <motion.div
         style={{
           width: "100%",
           height: "100%",
           position: "absolute",
           zIndex: 8,
-          pointerEvents: "none",
+          pointerEvents: "auto",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          border: "1px solid white",
         }}
+        drag={true}
+        dragMomentum={false}
       >
         <div
           style={{
@@ -294,7 +307,7 @@ function OnFrag() {
               />
             );
           })}
-          {postitArray.slice(5, 10).map((info, index) => {
+          {/* {postitArray.slice(5, 10).map((info, index) => {
             return (
               <Postit
                 key={index}
@@ -314,7 +327,7 @@ function OnFrag() {
                 }}
               />
             );
-          })}
+          })} */}
           {imageArray.reverse().map((info, index) => {
             return (
               <motion.img
@@ -323,14 +336,13 @@ function OnFrag() {
                 key={index}
                 src={"img/" + info}
                 alt={info}
-                width={300}
-                height={150}
+                height={300}
                 style={{ objectFit: "contain", pointerEvents: "auto" }}
               />
             );
           })}
         </div>
-      </div>
+      </motion.div>
       {callAccepted && !callEnded ? (
         <div
           style={{

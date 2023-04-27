@@ -18,6 +18,7 @@ function Postit({ content, color, size, onClick, selected = false }) {
         fontSize: 10,
         padding: 5,
         direction: "ltr",
+        borderRadius: 9,
       }}
       animate={{
         border: selected === false ? "2px solid " + color : "2px solid blue",

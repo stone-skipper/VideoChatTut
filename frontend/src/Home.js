@@ -20,29 +20,40 @@ function Home() {
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("Remote Participant");
+  const [toggleUI, setToggleUI] = useState(true);
 
   const [mode, setMode] = useState("sil"); //sil <> win <> full
 
+  // const postitArray = [
+  //   "Addictive and lead to decreased productivity and time wasting.",
+  //   "Prevalent cyberbullying and harrassment can cause serious mental health consequences. ",
+  //   // "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
+  //   "The spread of fake news, misinformation, and its impact on decision-making.",
+  //   "Hate speech and propaganda, fostering division and conflict.",
+  //   "A way to stay connected to friends, family, and community.",
+  //   "A place to connect with different people in the world and freely share your opinions",
+  //   // "Increase your visibility and build your audience for bigger opportunities in a career/business",
+  //   "A great source of knowledge and information to get inspired",
+  //   "Provide a platform for underrepresented communities to be heard and share their experiences.",
+  // ];
+
   const postitArray = [
-    "Addictive and lead to decreased productivity and time wasting.",
-    "Prevalent cyberbullying and harrassment can cause serious mental health consequences. ",
-    // "Create unrealistic expectations and unhealthy comparisons, leading to poor self-esteem and body image issues.",
-    "The spread of fake news, misinformation, and its impact on decision-making.",
-    "Hate speech and propaganda, fostering division and conflict.",
-    "A way to stay connected to friends, family, and community.",
-    "A place to connect with different people in the world and freely share your opinions",
-    // "Increase your visibility and build your audience for bigger opportunities in a career/business",
-    "A great source of knowledge and information to get inspired",
-    "Provide a platform for underrepresented communities to be heard and share their experiences.",
+    "gaming controller",
+    "user testings by regions",
+    "customization",
+    "future of connection",
   ];
 
   const imageArray = [
     "Frame1077.png",
     "Frame1078.png",
     "Frame1079.png",
-    "Option2.png",
-    "Frame1080.png",
-    "Frame1081.png",
+    // "Option2.png",
+    "Cursor-Rob.png",
+    "Cursor-Sam.png",
+    "Frame13464.png",
+    // "Frame1080.png",
+    // "Frame1081.png",
   ];
   const myVideo = useRef();
   const userVideo = useRef();
@@ -174,7 +185,7 @@ function Home() {
       setHoleSize(400);
     } else if (mode === "full") {
       setOpenHole(true);
-      setHoleSize(3000);
+      setHoleSize(5000);
     }
   }, [mode]);
 
@@ -211,6 +222,20 @@ function Home() {
     >
       <div
         style={{
+          position: "fixed",
+          zIndex: 100,
+          background: "yellow",
+          width: 30,
+          height: 30,
+          bottom: 0,
+          left: 0,
+        }}
+        onClick={() => {
+          setToggleUI(!toggleUI);
+        }}
+      ></div>
+      <div
+        style={{
           width: "fit-content",
           height: "fit-content",
           position: "absolute",
@@ -218,6 +243,7 @@ function Home() {
           bottom: 0,
           right: 0,
           zIndex: 10,
+          display: toggleUI === true ? "block" : "none",
         }}
       >
         {stream && (
@@ -250,12 +276,12 @@ function Home() {
       <div
         style={{
           width: "fit-content",
-          display: "flex",
           justifyContent: "center",
           position: "absolute",
           flexDirection: "column",
           alignItems: "center",
           zIndex: 10,
+          display: toggleUI === true ? "flex" : "none",
         }}
       >
         {/* header */}
@@ -323,17 +349,20 @@ function Home() {
           <Btn title="noCanv" active={mode} />
         </div>
       </div>
-      <div
+      <motion.div
         style={{
           width: "100%",
           height: "100%",
           position: "absolute",
           zIndex: 8,
-          pointerEvents: "none",
+          // pointerEvents: "none",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          border: "1px solid white",
         }}
+        drag={true}
+        dragMomentum={false}
       >
         <div
           style={{
@@ -379,14 +408,23 @@ function Home() {
                 key={index}
                 src={"img/" + info}
                 alt={info}
-                width={300}
-                height={150}
+                // width={300}
+                height={300}
                 style={{ objectFit: "contain", pointerEvents: "auto" }}
               />
             );
           })}
         </div>
-      </div>
+        <motion.img
+          drag={true}
+          dragMomentum={false}
+          src={"img/Frame1083.png"}
+          alt={"for MR"}
+          // width={300}
+          height={800}
+          style={{ objectFit: "contain", pointerEvents: "auto" }}
+        />
+      </motion.div>
 
       {callAccepted && !callEnded ? (
         <div
