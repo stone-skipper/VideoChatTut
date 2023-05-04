@@ -2,7 +2,7 @@ import { motion } from "framer-motion/dist/framer-motion";
 import { useState } from "react";
 
 function Postit({ content, color, size, onClick, selected = false }) {
-  // const [select, setSelect] = useState(false);
+  const [select, setSelect] = useState(false);
   return (
     <motion.div
       drag={true}
@@ -25,7 +25,7 @@ function Postit({ content, color, size, onClick, selected = false }) {
       }}
       dragMomentum={false}
       onClick={() => {
-        // setSelect(!select);
+        setSelect(!select);
         onClick();
       }}
     >

@@ -65,7 +65,7 @@ function OnFrag() {
     // "Option2.png",
     // "Cursor-Rob.png",
     // "Cursor-Sam.png",
-    "Frame13464.png",
+    // "Frame13464.png",
     // "Frame1080.png",
     // "Frame1081.png",
   ];

@@ -15,7 +15,7 @@ import KnockEffect from "./component/KnockEffect";
 // const socket = io.connect("http://localhost:5000");
 const socket = io.connect("https://ancient-bayou-47853.herokuapp.com/");
 
-function Home() {
+function Shadow() {
   const [me, setMe] = useState("");
   const [stream, setStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);
@@ -24,8 +24,8 @@ function Home() {
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("Remote Participant");
-  const [toggleUI, setToggleUI] = useState(false);
-  const [toggleEditor, setToggleEditor] = useState(true);
+  const [toggleUI, setToggleUI] = useState(true);
+  const [toggleEditor, setToggleEditor] = useState(false);
   const [keycode, setKeycode] = useState();
   const [animDone, setAnimDone] = useState(false);
 
@@ -269,16 +269,51 @@ function Home() {
       </div>
       <div
         style={{
-          width: "fit-content",
-          height: "fit-content",
-          position: "absolute",
-          background: "blue",
+          width: "100%",
+          height: "100%",
+          position: "relative",
           bottom: 0,
           right: 0,
-          zIndex: 10,
+          zIndex: 2,
+          mixBlendMode: "multiply",
           display: toggleUI === true ? "block" : "none",
         }}
       >
+        <div
+          style={{
+            width: "100%",
+            height: "50%",
+            bottom: 0,
+            background:
+              "linear-gradient(180deg, rgba(217, 227, 235, 0) 0%, #D9E3EB 56.77%, rgba(217, 227, 235, 0) 84.9%)",
+            position: "absolute",
+          }}
+        ></div>
+        {stream && (
+          //shadow
+          <video
+            playsInline
+            muted
+            ref={myVideo}
+            autoPlay
+            style={{
+              //   width: 300,
+              //   height: 200,
+              //   transform: "scaleX(-1)",
+              //   objectFit: "cover",
+              height: "100%",
+              width: "100%",
+              perspective: 1200,
+              transform: "scaleX(-100%) rotate3d(1, 0.4, -0.3, 85deg)",
+              transformOrigin: "bottom",
+              filter: "blur(100px) grayscale(1.0)",
+              objectFit: "cover",
+              mixBlendMode: "multiply",
+              position: "absolute",
+              opacity: 0.7,
+            }}
+          />
+        )}
         {stream && (
           <video
             playsInline
@@ -286,24 +321,19 @@ function Home() {
             ref={myVideo}
             autoPlay
             style={{
-              width: 300,
-              height: 200,
-              transform: "scaleX(-1)",
+              //   width: 300,
+              //   height: 200,
+              //   transform: "scaleX(-1)",
+              //   objectFit: "cover",
+              height: "100%",
+              width: "100%",
+              transform: "scaleX(-100%)",
               objectFit: "cover",
+              mixBlendMode: "multiply",
+              position: "absolute",
             }}
           />
         )}
-        <div
-          style={{
-            position: "absolute",
-            background: "black",
-            color: "white",
-            bottom: 0,
-            right: 0,
-          }}
-        >
-          my view
-        </div>
       </div>
 
       <div
@@ -531,4 +561,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Shadow;
