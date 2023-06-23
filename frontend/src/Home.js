@@ -26,9 +26,9 @@ function Home() {
   const [name, setName] = useState("Remote Participant");
   const [toggleUI, setToggleUI] = useState(false);
   const [toggleEditor, setToggleEditor] = useState(true);
-  const [keycode, setKeycode] = useState();
   const [animDone, setAnimDone] = useState(false);
-
+  const knockAudio = new Audio("audio/DigitalBongos.wav");
+  const acceptAudio = new Audio("audio/ModernWarning.wav");
   const [mode, setMode] = useState("sil"); //sil <> win <> full
 
   const postit = usePostitStore((state) => state.postit);
@@ -180,6 +180,14 @@ function Home() {
     }
     // console.log(selectedPostit);
   }, [openHole, holePos, blur, opacity, holeSize, selectedPostit]);
+
+  useEffect(() => {
+    if (openHole === true && animDone === false) {
+      knockAudio.play();
+    } else if (openHole === true && animDone === true) {
+      acceptAudio.play();
+    }
+  }, [openHole, animDone]);
 
   useEffect(() => {
     if (mode === "sil") {

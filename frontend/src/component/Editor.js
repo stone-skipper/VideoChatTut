@@ -7,6 +7,7 @@ function Editor({ display = true }) {
   // const [select, setSelect] = useState(false);
   const postit = usePostitStore((state) => state.postit);
   const addPostit = usePostitStore((state) => state.addPostit);
+  const bg = usePostitStore((state) => state.bg);
 
   const Divider = () => {
     return (
@@ -75,6 +76,11 @@ function Editor({ display = true }) {
         <Input type={"cursor"} />
       </div>
       <Divider />
+      <div style={wrapperStyle}>
+        <span style={labetStyle}>Background</span>
+        <div>- {bg}</div>
+        <Input type={"bg"} />
+      </div>
     </div>
   );
 }

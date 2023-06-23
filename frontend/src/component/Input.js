@@ -6,12 +6,13 @@ import { useDropzone } from "react-dropzone";
 function Input({ type }) {
   // const [select, setSelect] = useState(false);
   const postit = usePostitStore((state) => state.postit);
+  const bg = usePostitStore((state) => state.bg);
   const addPostit = usePostitStore((state) => state.addPostit);
   const [input, setInput] = useState("");
   const [active, setActive] = useState("");
   const [inactive, setInactive] = useState("");
   const [grab, setGrab] = useState("");
-
+  const [bgSrc, setBgSrc] = useState("");
   const [size, setSize] = useState(200);
 
   const handleChange = (e) => {
@@ -110,6 +111,23 @@ function Input({ type }) {
     });
   }, []);
 
+  const onBgProps = useCallback((acceptedFiles) => {
+    acceptedFiles.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onabort = () => console.log("file reading was aborted");
+      reader.onerror = () => console.log("file reading has failed");
+      reader.onload = () => {
+        // Do whatever you want with the file contents
+        const binaryStr = reader.result;
+        console.log(binaryStr);
+      };
+      reader.readAsArrayBuffer(file);
+      console.log(file);
+      handleSubmit(file, setBgSrc);
+    });
+  }, []);
+
   const { getInputProps } = useDropzone({
     onDrop,
     accept: {
@@ -133,6 +151,13 @@ function Input({ type }) {
 
   const { getInputProps: getGrabProps } = useDropzone({
     onDrop: onGrabProps,
+    accept: {
+      "image/*": [],
+    },
+  });
+
+  const { getInputProps: getBgProps } = useDropzone({
+    onDrop: onBgProps,
     accept: {
       "image/*": [],
     },
@@ -214,6 +239,11 @@ function Input({ type }) {
           ></input>
         </form>
       )}
+      {type === "bg" && (
+        <form>
+          <input {...getBgProps()} style={{ width: "100%" }} id="bg"></input>
+        </form>
+      )}
 
       <div
         style={{
@@ -233,6 +263,8 @@ function Input({ type }) {
               content: [active, inactive, grab],
               size: Number(size),
             });
+          } else if (type === "bg") {
+            usePostitStore.setState({ bg: bgSrc });
           } else {
             addPostit({ type: type, content: input, size: Number(size) });
           }

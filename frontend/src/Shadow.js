@@ -10,6 +10,7 @@ import "./App.css";
 import Editor from "./component/Editor";
 import { usePostitStore } from "./helper/store";
 import CanvasContent from "./component/CanvasContent";
+import Bg from "./component/Bg";
 import KnockEffect from "./component/KnockEffect";
 
 // const socket = io.connect("http://localhost:5000");
@@ -31,27 +32,9 @@ function Shadow() {
 
   const [mode, setMode] = useState("sil"); //sil <> win <> full
 
-  const postit = usePostitStore((state) => state.postit);
-
-  const postitArray = [
-    "gaming controller",
-    "user testings by regions",
-    "customization",
-    "future of connection",
-  ];
-
-  const imageArray = [
-    "Frame1077.png",
-    "Frame1078.png",
-    "Frame1079.png",
-    // "Option2.png",
-    "Cursor-Rob.png",
-    "Cursor-Sam.png",
-    "Frame13464.png",
-    // "Frame1080.png",
-    // "Frame1081.png",
-  ];
   const myVideo = useRef();
+  const myVideo2 = useRef();
+
   const userVideo = useRef();
   const userVideo2 = useRef();
   const connectionRef = useRef();
@@ -60,29 +43,17 @@ function Shadow() {
   const [openHole, setOpenHole] = useState(false);
   const [holePos, setHolePos] = useState({ x: 0, y: 0 });
   const [holeSize, setHoleSize] = useState(400);
-  const [opacity, setOpacity] = useState(0.3);
-  const [blur, setBlur] = useState(25);
-  const [selectedPostit, setSelectedPostit] = useState([]);
+  const [opacity, setOpacity] = useState(0.6);
+  const [blur, setBlur] = useState(100);
+  const [bodyOpacity, setBodyOpacity] = useState(1);
+  const [bodyBlur, setBodyBlur] = useState(0);
+  const [backgroundBlur, setBackgroundBlur] = useState(0);
 
-  const moveFeed = () => {
-    socket.emit("switchMode", {
-      blur: blur,
-      opacity: opacity,
-      holePos: holePos,
-      holeSize: holeSize,
-      openHole: openHole,
-      postit: selectedPostit,
-    });
-    console.log("switching mode");
-  };
-
-  function handleKeyDown(event) {
-    console.log(event.keyCode);
-    usePostitStore.setState({ keyboard: event.keyCode });
-    // if (event.keyCode === 13) {
-    //   console.log("Enter key pressed");
-    // }
-  }
+  const [x, setX] = useState(1);
+  const [y, setY] = useState(0.4);
+  const [z, setZ] = useState(-0.3);
+  const [toggleShadow, setToggleShadow] = useState(true);
+  const [border, setBorder] = useState(false);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -91,128 +62,9 @@ function Shadow() {
         setStream(stream);
         console.log(stream);
         myVideo.current.srcObject = stream;
+        myVideo2.current.srcObject = stream;
       });
-
-    socket.on("me", (id) => {
-      setMe(id);
-    });
-
-    socket.on("callUser", (data) => {
-      setReceivingCall(true);
-      setCaller(data.from);
-      setName(data.name);
-      setCallerSignal(data.signal);
-    });
-
-    socket.on("switchMode", (data) => {
-      // moveFeed();
-      setOpenHole(data.openHole);
-      setBlur(data.blur);
-      setOpacity(data.opacity);
-      setHolePos(data.holePos);
-      setHoleSize(data.holeSize);
-      setSelectedPostit(data.postit);
-      // console.log("listener");
-    });
   }, []);
-
-  const callUser = (id) => {
-    const peer = new Peer({
-      initiator: true,
-      trickle: false,
-      stream: stream,
-    });
-    peer.on("signal", (data) => {
-      socket.emit("callUser", {
-        userToCall: id,
-        signalData: data,
-        from: me,
-        name: name,
-      });
-    });
-
-    socket.on("callAccepted", (signal) => {
-      setCallAccepted(true);
-      peer.signal(signal);
-      peer.on("stream", (stream) => {
-        userVideo.current.srcObject = stream;
-        userVideo2.current.srcObject = stream;
-      });
-    });
-
-    connectionRef.current = peer;
-  };
-
-  const answerCall = () => {
-    setCallAccepted(true);
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream: stream,
-    });
-    peer.on("signal", (data) => {
-      socket.emit("answerCall", {
-        signal: data,
-        to: caller,
-      });
-      // moveFeed();
-    });
-    peer.on("stream", (stream) => {
-      userVideo.current.srcObject = stream;
-      userVideo2.current.srcObject = stream;
-    });
-    peer.signal(callerSignal);
-    connectionRef.current = peer;
-  };
-
-  const leaveCall = () => {
-    setCallEnded(true);
-    connectionRef.current.destroy();
-  };
-
-  useEffect(() => {
-    setHolePos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
-  }, []);
-
-  useEffect(() => {
-    if (callAccepted === true) {
-      moveFeed();
-    }
-    // console.log(selectedPostit);
-  }, [openHole, holePos, blur, opacity, holeSize, selectedPostit]);
-
-  useEffect(() => {
-    if (mode === "sil") {
-      setOpenHole(false);
-      setBlur(25);
-      setOpacity(0.3);
-    } else if (mode === "win") {
-      setOpenHole(true);
-      setHoleSize(400);
-    } else if (mode === "full") {
-      setOpenHole(true);
-      setHoleSize(5000);
-    }
-  }, [mode]);
-
-  const Btn = ({ title, active }) => {
-    return (
-      <div
-        style={{
-          padding: 10,
-          width: "fit-content",
-          height: "fit-content",
-          color: "white",
-          background: active === title ? "blue" : "grey",
-        }}
-        onClick={() => {
-          setMode(title);
-        }}
-      >
-        {title}
-      </div>
-    );
-  };
 
   return (
     <div
@@ -225,9 +77,9 @@ function Shadow() {
         alignItems: "center",
         overflow: "hidden",
       }}
-      onKeyDown={handleKeyDown}
       tabIndex="0"
     >
+      <Bg mode={mode} blur={backgroundBlur} />
       <Editor display={toggleEditor} />
       <div
         style={{
@@ -294,23 +146,29 @@ function Shadow() {
           <video
             playsInline
             muted
-            ref={myVideo}
+            ref={myVideo2}
             autoPlay
             style={{
-              //   width: 300,
-              //   height: 200,
-              //   transform: "scaleX(-1)",
-              //   objectFit: "cover",
               height: "100%",
               width: "100%",
               perspective: 1200,
-              transform: "scaleX(-100%) rotate3d(1, 0.4, -0.3, 85deg)",
+              transform:
+                "scaleX(-100%) rotate3d(" +
+                x +
+                ", " +
+                y +
+                ", " +
+                z +
+                ", 85deg)",
               transformOrigin: "bottom",
-              filter: "blur(100px) grayscale(1.0)",
+              filter: "blur(" + blur + "px) grayscale(1.0)",
               objectFit: "cover",
               mixBlendMode: "multiply",
               position: "absolute",
-              opacity: 0.7,
+              opacity: opacity,
+              display: toggleShadow === true ? "block" : "none",
+              border:
+                border === true ? "3px solid red" : "3px solid transparent",
             }}
           />
         )}
@@ -321,16 +179,14 @@ function Shadow() {
             ref={myVideo}
             autoPlay
             style={{
-              //   width: 300,
-              //   height: 200,
-              //   transform: "scaleX(-1)",
-              //   objectFit: "cover",
               height: "100%",
               width: "100%",
               transform: "scaleX(-100%)",
               objectFit: "cover",
               mixBlendMode: "multiply",
               position: "absolute",
+              opacity: bodyOpacity,
+              filter: "blur(" + bodyBlur + "px)",
             }}
           />
         )}
@@ -347,25 +203,9 @@ function Shadow() {
           display: toggleUI === true ? "flex" : "none",
         }}
       >
-        {/* header */}
-        {/* <h1 style={{ textAlign: "center", color: "#fff" }}>
-          Magic wall (moderator)
-        </h1> */}
-        <p style={{ textAlign: "center" }}> socket id :{me}</p>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            window.open(baseURL + me);
-            navigator.clipboard.writeText(baseURL + me);
-          }}
-        >
-          <QRCodeSVG value={baseURL + me} size={50} />,
-        </div>
+        <p style={{ textAlign: "center" }}>
+          background / visual effect testing
+        </p>
         <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
           opacity {opacity}
           <input
@@ -389,174 +229,110 @@ function Shadow() {
               setBlur(parseInt(e.target.value));
             }}
             min={0}
-            max={100}
+            max={200}
           />
         </div>
         <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-          holeSize {holeSize}
+          x {x}
           <input
             type="range"
-            value={holeSize}
+            value={x}
             onChange={(e) => {
-              setHoleSize(parseInt(e.target.value));
+              setX(e.target.value);
             }}
-            min={0}
-            max={1000}
+            min={-1}
+            max={1}
+            step={0.1}
           />
         </div>
-        openHole : {openHole.toString()}
-        <div style={{ display: "flex" }}>
-          <Btn title="sil" active={mode} />
-          <Btn title="win" active={mode} />
-          <Btn title="full" active={mode} />
-          <Btn title="noCanv" active={mode} />
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          y {y}
+          <input
+            type="range"
+            value={y}
+            onChange={(e) => {
+              setY(e.target.value);
+            }}
+            min={-1}
+            max={1}
+            step={0.1}
+          />
+        </div>{" "}
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          z {z}
+          <input
+            type="range"
+            value={z}
+            onChange={(e) => {
+              setZ(e.target.value);
+            }}
+            min={-1}
+            max={1}
+            step={0.1}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          bodyOpacity {bodyOpacity}
+          <input
+            type="range"
+            value={bodyOpacity}
+            onChange={(e) => {
+              setBodyOpacity(e.target.value);
+            }}
+            min={0}
+            max={1}
+            step={0.1}
+            label={"body opacity"}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          bodyBlur {bodyBlur}
+          <input
+            type="range"
+            value={bodyBlur}
+            onChange={(e) => {
+              setBodyBlur(parseInt(e.target.value));
+            }}
+            min={0}
+            max={200}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+          bgBlur {backgroundBlur}
+          <input
+            type="range"
+            value={backgroundBlur}
+            onChange={(e) => {
+              setBackgroundBlur(parseInt(e.target.value));
+            }}
+            min={0}
+            max={200}
+          />
         </div>
         <div
           style={{
-            background: animDone === true ? "green" : "darkgrey",
+            background: toggleShadow === true ? "green" : "darkgrey",
             color: "white",
           }}
           onClick={() => {
-            setAnimDone(!animDone);
+            setToggleShadow(!toggleShadow);
           }}
         >
-          Rob accepted : {animDone.toString()}
+          shadow: {toggleShadow.toString()}
+        </div>
+        <div
+          style={{
+            background: border === true ? "green" : "darkgrey",
+            color: "white",
+          }}
+          onClick={() => {
+            setBorder(!border);
+          }}
+        >
+          border: {border.toString()}
         </div>
       </div>
       <CanvasContent mode={mode} />
-      {callAccepted && !callEnded ? (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            position: "relative",
-          }}
-        >
-          <motion.div
-            style={{
-              width: "100%",
-              height: "100%",
-              overflow: "hidden",
-              filter: "blur(" + blur + "px)",
-              opacity: opacity,
-              position: "absolute",
-              top: 0,
-              left: 0,
-            }}
-          >
-            {/* for blur */}
-            <video
-              playsInline
-              ref={userVideo}
-              autoPlay
-              // muted
-              style={{
-                height: "100%",
-                width: "100%",
-                transform: "scaleX(-100%)",
-                objectFit: "cover",
-              }}
-            />
-          </motion.div>
-
-          <motion.div
-            style={{
-              width: "100%",
-              height: "100%",
-              overflow: "hidden",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              zIndex: 3,
-            }}
-            onClick={(e) => {
-              console.log(e.clientX, e.clientY);
-              setOpenHole(!openHole);
-              setHolePos({ x: e.clientX, y: e.clientY });
-            }}
-          >
-            <motion.div
-              style={{
-                overflow: "hidden",
-                position: "relative",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                // background: "blue",
-              }}
-              animate={{
-                width: holeSize,
-                height: holeSize,
-                left: holePos.x - holeSize / 2,
-                top: holePos.y - holeSize / 2,
-                borderRadius: holeSize / 2,
-              }}
-            >
-              <motion.div
-                style={{
-                  overflow: "hidden",
-                  position: "relative",
-                }}
-                animate={{
-                  borderRadius: holeSize / 2,
-                  height: animDone === true && openHole === true ? holeSize : 0,
-                  width: animDone === true && openHole === true ? holeSize : 0,
-                }}
-              >
-                <motion.video
-                  playsInline
-                  ref={userVideo2}
-                  autoPlay
-                  muted
-                  style={{
-                    height: "100vh",
-                    width: "100vw",
-                    transform: "scaleX(-100%)",
-                    objectFit: "cover",
-                    position: "absolute",
-                  }}
-                  animate={{
-                    left: 0 - holePos.x + holeSize / 2,
-                    top: 0 - holePos.y + holeSize / 2,
-                  }}
-                />
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </div>
-      ) : null}
-      <KnockEffect
-        position={{ x: holePos.x, y: holePos.y }}
-        trigger={openHole}
-        holeAccepted={animDone}
-      />
-      <div>
-        {receivingCall && !callAccepted ? (
-          <div
-            className="caller"
-            style={{
-              width: "100%",
-              height: "100%",
-              background: "rgba(0,0,0,0.3)",
-              position: "absolute",
-              zIndex: 15,
-              top: 0,
-              left: 0,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <h1>{name.toString()} is calling...</h1>
-              <Button variant="contained" color="primary" onClick={answerCall}>
-                Connect
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </div>
     </div>
   );
 }

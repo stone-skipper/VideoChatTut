@@ -3,6 +3,7 @@ import { produce } from "immer";
 
 export const usePostitStore = create((set) => ({
   keyboard: null,
+  bg: "img/Background02.png",
   postit: [
     { type: "text", content: "magic wall" },
     { type: "img", content: "img/Frame1079.png", size: 200 },
